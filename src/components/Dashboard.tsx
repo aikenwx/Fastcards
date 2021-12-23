@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Alert, Button, Card } from "react-bootstrap";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
+import NavBar from "./NavBar";
 
 export default function Dashboard() {
   const [error, setError] = useState("");
@@ -21,6 +22,8 @@ export default function Dashboard() {
 
   return (
     <>
+      <NavBar />
+      <span />
       <Card>
         <h2 className="text-center mb-4">Profile</h2>
         {error && <Alert variant="danger">{error}</Alert>}
