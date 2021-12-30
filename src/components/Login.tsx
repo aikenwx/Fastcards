@@ -28,8 +28,7 @@ export default function Login() {
   }
 
   return (
-    <BoxContainer
-      element={
+    <BoxContainer>
         <Card>
           <Card.Body>
             <h2 className="text-center mb-4">Log In</h2>
@@ -65,7 +64,6 @@ export default function Login() {
             <Link to="/signup"> Sign Up</Link>
           </div>
         </Card>
-      }
-    />
+    </BoxContainer>
   );
 }

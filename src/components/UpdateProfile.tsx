@@ -2,6 +2,7 @@ import React, { useRef, useState } from "react";
 import { Alert, Form, Button, Card } from "react-bootstrap";
 import { useAuth } from "../contexts/AuthContext";
 import { Link, useNavigate } from "react-router-dom";
+import BoxContainer from "./BoxContainer";
 
 export default function UpdateProfile() {
   const emailRef: any = useRef();
@@ -38,11 +39,11 @@ export default function UpdateProfile() {
       .catch((exception: any) => {
         setError(exception.message);
       })
-      .finally(()=>setLoading(false));
+      .finally(() => setLoading(false));
   }
 
   return (
-    <>
+    <BoxContainer>
       <Card>
         <Card.Body>
           <h2 className="text-center mb-4">Update Profile</h2>
@@ -82,6 +83,6 @@ export default function UpdateProfile() {
           <Link to="/"> Cancel </Link>
         </div>
       </Card>
-    </>
+    </BoxContainer>
   );
 }
