@@ -8,6 +8,7 @@ import PrivateRoute from "./PrivateRoute";
 import ForgotPassword from "./ForgotPassword";
 import UpdateProfile from "./UpdateProfile";
 import SignedInRoute from "./SignedInRoute";
+import Subject from "./Subject";
 
 function App() {
   return (
@@ -54,6 +55,10 @@ function App() {
                   <UpdateProfile />
                 </PrivateRoute>
               }
+            />
+            <Route
+              path="/subject/:subjectId"
+              element={<Subject></Subject>}
             />
           </Routes>
         </AuthProvider>
