@@ -6,7 +6,7 @@ import { flashcard, subject } from "../types";
 import { onValue, push, ref } from "firebase/database";
 import { stringify } from "querystring";
 import NavBar from "./NavBar";
-import { addFlashcard } from "../databaseHandlers";
+import { addFlashcard, deleteFlashcard } from "../databaseHandlers";
 import FlashCard from "./FlashCard";
 import { Card } from "react-bootstrap";
 
@@ -16,15 +16,27 @@ export default function Subject() {
   const [cards, setCards]: [flashcard[], any] = useState([]);
 
   const handleSubmit = () => {
-    addFlashcard(
-      currentUser.uid,
-      params.subjectId || "",
-      "test",
-      "test",
-      "test",
-      true,
-      true
-    );
+    try {
+      addFlashcard(
+        currentUser.uid,
+        params.subjectId || "",
+        "test",
+        "test",
+        "test",
+        true,
+        true
+      );
+    } catch (error: any) {
+      console.log(error.message);
+    }
+  };
+
+  const handleDelete = (flashcardId: string) => {
+    try {
+      deleteFlashcard(currentUser.uid, params.subjectId || "", flashcardId);
+    } catch (error: any) {
+      console.log(error.message);
+    }
   };
 
   useEffect(() => {
@@ -52,7 +64,7 @@ export default function Subject() {
 
           setCards(arr);
         }
-      },
+      }
     );
   }, []);
 
@@ -62,11 +74,11 @@ export default function Subject() {
 
       <div>
         {cards.map((card) => (
-          <FlashCard {...card} key={card.flashcardId}></FlashCard>
+          <FlashCard f={card} deleteHandler={handleDelete} key={card.flashcardId}></FlashCard>
         ))}
       </div>
 
-      <button onClick={handleSubmit}> test </button>
+      <button onClick={handleSubmit}> add flashcard </button>
     </>
   );
 }

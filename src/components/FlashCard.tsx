@@ -1,8 +1,11 @@
 import React from "react";
 import { flashcard } from "../types";
 
-export default function FlashCard(
-f : flashcard) {
+
+
+
+export default function FlashCard({f
+, deleteHandler}:{f:flashcard, deleteHandler: (id: string)=>void}) {
 return (
     <div className="container mt-3">
       <div className="card" style={{ width: "18rem" }}>
@@ -12,6 +15,7 @@ return (
           {f.isImageVisible && f.image && <img className="card-img-bottom" src={f.image} />}
         </div>
       </div>
+      <button onClick={()=>deleteHandler(f.flashcardId)}>delete</button>
     </div>
   );
 }
