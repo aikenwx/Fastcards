@@ -1,6 +1,6 @@
 import { db } from "./firebase";
 import { push, ref, remove , update } from "firebase/database";
-import { subject } from "./types";
+import { flashcard, subject } from "./types";
 
 
 export const addSubject = (uid: string, subjectName: string) => {
@@ -64,5 +64,24 @@ export const renameSubject = (
       db, 
       "Users/" + uid + "/Subjects/" + subjectId
     ),  {name: newName}
+  )
+}
+
+export const editFlashcard = (
+  uid: string,
+  subjectId:string,
+  flashcard: flashcard
+) => {
+  update(
+    ref(
+      db,
+      "Users/"+ uid + "/Subjects/" + subjectId + "/Flashcards/" + flashcard.flashcardId
+      ), {
+        keyPhrase: flashcard.keyPhrase,
+        image: flashcard.image,
+        description: flashcard.description,
+        isDescriptionVisible: flashcard.isDescriptionVisible,
+        isImageVisible: flashcard.isImageVisible
+      }
   )
 }
