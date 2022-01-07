@@ -1,27 +1,24 @@
 import React, { useState, useEffect } from "react";
-import { Dropdown, Form, ButtonGroup } from "react-bootstrap";
+import { Plus } from "react-bootstrap-icons";
+import { Dropdown, Form, ButtonGroup, Container } from "react-bootstrap";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
-import FlashCard from "./FlashCard";
 import NavBar from "./NavBar";
 import { db } from "../firebase";
-import { onValue, push, ref } from "firebase/database";
+import { onValue, ref } from "firebase/database";
 import { addSubject, deleteSubject, renameSubject } from "../databaseHandlers";
 import { subject } from "../types";
 
 export default function Dashboard() {
-  const [error, setError] = useState("");
-  const { logOut, currentUser } = useAuth();
-  const navigate = useNavigate();
+  const { currentUser } = useAuth();
   const [subjects, setSubjects]: [subject[], any] = useState([]);
-  const [formName, setFormName]: any = useState();
   const [open, setOpen]: any = useState();
+  const [currKey, setCurrKey]: any = useState();
 
   //read
   useEffect(() => {
     onValue(ref(db, "Users/" + currentUser.uid), (snapshot) => {
       const data = snapshot.val();
-
       if (data !== null) {
         let arr: any[] = [];
         snapshot.forEach((data) => {
@@ -34,7 +31,7 @@ export default function Dashboard() {
           });
         });
         setSubjects(arr);
-      }
+      } else setSubjects([]);
     });
   }, []);
 
@@ -48,62 +45,87 @@ export default function Dashboard() {
   };
 
   async function handleSubmit() {
-    addSubject(currentUser.uid, "test");
+    addSubject(currentUser.uid, "New Subject");
   }
 
   return (
     <>
       <NavBar />
-      <div>
-        {subjects.map((subject) => (
-          <div key={subject.subjectId} className="mt-2">
-            <Dropdown as={ButtonGroup} onOpen={()=>setOpen(true)} onClose={()=>setOpen(false)} isOpen={open}>
-              <Link
-                className="btn btn-primary"
-                to={"subject/" + subject.subjectId}
-              >
-                {subject.name}
-              </Link>
-
-              <Dropdown.Toggle split id="dropdown-split-basic" />
-
-              <Dropdown.Menu>
-                <Dropdown.Item
-                  href="#/action-1"
-                  onClick={() =>
-                    deleteSubject(currentUser.uid, subject.subjectId)
+      <Container>
+        <div>
+          {subjects.map((subject) => (
+            <div key={subject.subjectId} className="mt-2">
+              <Dropdown
+                as={ButtonGroup}
+                onToggle={() => {
+                  if (open && subject.subjectId == currKey) {
+                    setOpen(false);
+                    setCurrKey("");
+                  } else {
+                    setOpen(true);
+                    setCurrKey(subject.subjectId);
                   }
+                }}
+                show={open && currKey == subject.subjectId}
+              >
+                <Link
+                  className="btn btn-primary"
+                  to={"subject/" + subject.subjectId}
                 >
-                  Delete Subject
-                </Dropdown.Item>
-                <Dropdown.Item href="#/action-2" onClick={(e:any)=>{e.preventDefault()
-                setOpen(true)}}>
-                  <Form >
-                    <Form.Label>Rename Subject</Form.Label>
-                    <Form.Control
-                      placeholder={subject.name}
-                      onBlur={(e) =>
-                        renameSubject(
-                          currentUser.uid,
-                          subject.subjectId,
-                          e.target.value
-                        )
-                      }
-                      onKeyDown={(e) => {
-                        if (e.key == "Enter") {
-                        }
+                  {subject.name}
+                </Link>
+
+                <Dropdown.Toggle split id="dropdown-split-basic" />
+
+                <Dropdown.Menu>
+                  <Dropdown.Item href="#/action-1">
+                    <Form
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
                       }}
-                    ></Form.Control>
-                  </Form>
-                </Dropdown.Item>
-              </Dropdown.Menu>
-            </Dropdown>
-          </div>
-        ))}
-      </div>
-      <button className="btn btn-primary mt-2" onClick={handleSubmit}>
-        Add Subject
-      </button>
+                    >
+                      <Form.Label>Rename Subject</Form.Label>
+                      <Form.Control
+                        placeholder={subject.name}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                        }}
+                        onBlur={(e) =>
+                          renameSubject(
+                            currentUser.uid,
+                            subject.subjectId,
+                            e.target.value
+                          )
+                        }
+                        onKeyDown={(e) => {
+                          if (e.key == "Enter") {
+                            setOpen(!open);
+                            setCurrKey(subject.subjectId);
+                          }
+                        }}
+                      />
+                    </Form>
+                  </Dropdown.Item>
+                  <Dropdown.Item
+                    href="#/action-2"
+                    onClick={() =>
+                      deleteSubject(currentUser.uid, subject.subjectId)
+                    }
+                  >
+                    Delete Subject
+                  </Dropdown.Item>
+                </Dropdown.Menu>
+              </Dropdown>
+            </div>
+          ))}
+        </div>
+        <button className="btn btn-primary mt-2" onClick={handleSubmit}>
+          {"Add Subject"}
+          <Plus size={20}></Plus>
+        </button>
+      </Container>
     </>
   );
 }
