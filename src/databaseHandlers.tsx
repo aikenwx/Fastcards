@@ -1,6 +1,7 @@
 import { db } from "./firebase";
 import { push, ref, remove , update } from "firebase/database";
 import { flashcard, subject } from "./types";
+import { deleteImage, deleteObjects } from "./storageHandlers";
 
 
 export const addSubject = (uid: string, subjectName: string) => {
@@ -13,14 +14,16 @@ export const addFlashcard = (
   uid: string,
   subjectId: string,
   keyPhrase: string,
-  image: string,
+  imageId: string,
+  imageUrl: string,
   description: string,
   isDescriptionVisible: boolean,
   isImageVisible: boolean
 ) => {
   push(ref(db, "Users/" + uid + "/Subjects/" + subjectId + "/Flashcards"), {
     keyPhrase: keyPhrase,
-    image: image,
+    imageId: imageId,
+    imageUrl: imageUrl,
     description: description,
     isDescriptionVisible: isDescriptionVisible,
     isImageVisible: isImageVisible,
@@ -42,14 +45,21 @@ export const deleteFlashcard = (
 
 export const deleteSubject = (
   uid: string,
-  subjectId:string
+  subject: any
 ) => {
+  
+  const imageIds:string[] = []
+  
+  for (const flashcard in subject.Flashcards) {
+    imageIds.push(subject.Flashcards[flashcard].imageId)
+  }
+  
   remove(
     ref(
       db, 
-      "Users/" + uid + "/Subjects/" + subjectId
+      "Users/" + uid + "/Subjects/" + subject.subjectId
     )
-  )
+  ).then(()=>deleteObjects("images/", imageIds))
 }
 
 export const renameSubject = (
@@ -78,10 +88,45 @@ export const editFlashcard = (
       "Users/"+ uid + "/Subjects/" + subjectId + "/Flashcards/" + flashcard.flashcardId
       ), {
         keyPhrase: flashcard.keyPhrase,
-        image: flashcard.image,
+        imageId: flashcard.imageId,
+        imageUrl: flashcard.imageUrl,
         description: flashcard.description,
         isDescriptionVisible: flashcard.isDescriptionVisible,
         isImageVisible: flashcard.isImageVisible
       }
   )
 }
+
+// export const updateFlashcard = (
+//   uid: string,
+//   subjectId:string,
+//   flashcardId: string,
+//   keyPhrase?: string,
+//   image?: string,
+//   description?: string,
+//   isDescriptionVisible?: string,
+//   isImageVisible?: string
+// ) => {
+
+//   const updatedParameters = {
+//     flashcardId: flashcardId
+//   }
+
+//   if (keyPhrase) {
+//     flashcardId + {keyPhrase: keyPhrase}
+//   }
+  
+
+//   update(
+//     ref(
+//       db,
+//       "Users/"+ uid + "/Subjects/" + subjectId + "/Flashcards/" + flashcardId
+//       ), {
+//         keyPhrase: keyPhrase,
+//         image: image,
+//         description: description,
+//         isDescriptionVisible: isDescriptionVisible,
+//         isImageVisible: isImageVisible
+//       }
+//   )
+// }

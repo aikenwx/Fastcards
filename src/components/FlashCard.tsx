@@ -12,6 +12,8 @@ import {
   Button,
   Card,
 } from "react-bootstrap";
+import { storage } from "../firebase";
+import { deleteImage, uploadImage } from "../storageHandlers";
 
 export default function FlashCard({
   f,
@@ -23,9 +25,10 @@ export default function FlashCard({
   const { currentUser } = useAuth();
   const [keyPhrase, setKeyPhrase]: any = useState(f.keyPhrase);
   const [description, setDescription]: any = useState(f.description);
-  const [image, setImage]: any = useState(f.image);
+  //const [imageUrl, setImageUrl]: any = useState(f.imageUrl);
 
   const [show, setShow] = useState(false);
+  const [imageFile, setImageFile]:any = useState(null);
 
   const handleClose = () => setShow(false);
   const handleSave = () => {
@@ -33,14 +36,14 @@ export default function FlashCard({
       ...f,
     };
 
-    updatedFlashcard.image = image;
+    //updatedFlashcard.imageUrl = imageUrl;
     updatedFlashcard.description = description;
     updatedFlashcard.keyPhrase = keyPhrase;
 
     editFlashcard(currentUser.uid, subjectId, updatedFlashcard);
     setShow(false);
   };
-
+  
   const handleShow = () => setShow(true);
 
   const handleToggleDescription = () => {
@@ -60,6 +63,23 @@ export default function FlashCard({
     editFlashcard(currentUser.uid, subjectId, updatedFlashcard);
   };
 
+  const handleImageChange = (e: any) => {
+    if (e.target.files[0]) {
+      setImageFile(e.target.files[0]);
+    }
+  };
+
+  const handleImageUpload = () => {
+    if ((imageFile instanceof File)) {
+      uploadImage(currentUser.uid, subjectId, imageFile, f);
+    }
+    
+  };
+
+  const handleDeleteImage = () => {
+    deleteImage(currentUser.uid, subjectId, f);
+  };
+
   return (
     <div className="container mt-3">
       <Card className="card" style={{ width: "18rem" }} onClick={handleShow}>
@@ -68,8 +88,8 @@ export default function FlashCard({
           {f.isDescriptionVisible && (
             <p className="card-text">{f.description}</p>
           )}
-          {f.isImageVisible && f.image && (
-            <img className="card-img-bottom" src={f.image} />
+          {f.isImageVisible && f.imageUrl && (
+            <img className="card-img-bottom" src={f.imageUrl} />
           )}
         </div>
       </Card>
@@ -85,20 +105,23 @@ export default function FlashCard({
             <Dropdown.Toggle
               id="dropdown-basic"
               variant="light"
-            >
-            </Dropdown.Toggle>
+            ></Dropdown.Toggle>
 
             <Dropdown.Menu>
-              {f.description && <Dropdown.Item
-                href="#/action-1"
-                onClick={handleToggleDescription}
-              >
-                Toggle Description
-              </Dropdown.Item>}
+              {f.description && (
+                <Dropdown.Item
+                  href="#/action-1"
+                  onClick={handleToggleDescription}
+                >
+                  Toggle Description
+                </Dropdown.Item>
+              )}
 
-              {f.image && <Dropdown.Item href="#/action-2" onClick={handleToggleImage}>
-                Toggle Image
-              </Dropdown.Item>}
+              {f.imageUrl && (
+                <Dropdown.Item href="#/action-2" onClick={handleToggleImage}>
+                  Toggle Image
+                </Dropdown.Item>
+              )}
               <Dropdown.Item
                 href="#/action-3"
                 onClick={() =>
@@ -118,12 +141,18 @@ export default function FlashCard({
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Add a description for this keyword"
           ></Form.Control>
-          <Form.Control
-            defaultValue={f.image}
+          {/*<Form.Control
+            defaultValue={f.imageUrl}
             style={{ border: 0 }}
             onChange={(e) => setImage(e.target.value)}
             placeholder="Add an image URL"
-          ></Form.Control>
+          ></Form.Control>*/}
+          <Form.Group controlId="formFile" className="mb-3">
+            <Form.Label>Select Image</Form.Label>
+            <Form.Control type="file" onChange={handleImageChange} accept="image/*"/>
+            <Button onClick={handleImageUpload}>Submit</Button>
+            <Button onClick={handleDeleteImage}>Delete Image</Button>
+          </Form.Group>
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={handleClose}>

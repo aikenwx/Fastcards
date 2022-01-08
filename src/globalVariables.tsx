@@ -1,0 +1,1 @@
+export const imageSizeLimit = 5

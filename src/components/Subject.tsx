@@ -27,6 +27,7 @@ export default function Subject() {
         "Untitled",
         "",
         "",
+        "",
         true,
         true
       );
@@ -87,7 +88,7 @@ export default function Subject() {
         ))}
       </div>
       <Container className="mt-3">
-        <Button onClick={handleAdd}> add flashcard </Button>
+        <Button onClick={handleAdd}> Add Flashcard </Button>
       </Container>
     </>
   );

@@ -53,7 +53,7 @@ export default function Dashboard() {
       <NavBar />
       <Container>
         <div>
-          {subjects.map((subject) => (
+          {subjects.map((subject: subject) => (
             <div key={subject.subjectId} className="mt-2">
               <Dropdown
                 as={ButtonGroup}
@@ -111,7 +111,7 @@ export default function Dashboard() {
                   <Dropdown.Item
                     href="#/action-2"
                     onClick={() =>
-                      deleteSubject(currentUser.uid, subject.subjectId)
+                      deleteSubject(currentUser.uid, subject)
                     }
                   >
                     Delete Subject
