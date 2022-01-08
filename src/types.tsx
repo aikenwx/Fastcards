@@ -1,10 +1,12 @@
 export type flashcard = {
   flashcardId: string;
   keyPhrase: string;
-  image: string;
+  imageId: string;
+  imageUrl: string
   description: string;
   isDescriptionVisible: boolean;
   isImageVisible: boolean;
+  
 };
 export type subject = {
   subjectId: string;
