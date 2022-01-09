@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { editFlashcard, deleteFlashcard } from "../databaseHandlers";
 import { ThreeDots } from "react-bootstrap-icons";
 import { flashcard } from "../types";
@@ -11,9 +11,12 @@ import {
   Modal,
   Button,
   Card,
+  Image,
 } from "react-bootstrap";
-import { storage } from "../firebase";
 import { deleteImage, uploadImage } from "../storageHandlers";
+import { checkFileIsImage, checkValidFileSize } from "../helperFunctions";
+import { imageSizeLimit } from "../globalVariables";
+import ImageDropContainer from "./ImageDropContainer";
 
 export default function FlashCard({
   f,
@@ -25,25 +28,42 @@ export default function FlashCard({
   const { currentUser } = useAuth();
   const [keyPhrase, setKeyPhrase]: any = useState(f.keyPhrase);
   const [description, setDescription]: any = useState(f.description);
-  //const [imageUrl, setImageUrl]: any = useState(f.imageUrl);
+  const [imageUrl, setImageUrl]: any = useState(f.imageUrl);
 
   const [show, setShow] = useState(false);
-  const [imageFile, setImageFile]:any = useState(null);
+  const [imageFile, setImageFile]: any = useState();
+  const [previewImageUrl, setPreviewImageUrl]: [string, any] = useState("");
+  const [error, setError] = useState("");
 
-  const handleClose = () => setShow(false);
+  const handleClose = () => {
+    setShow(false);
+  };
+
+  useEffect(() => {
+    setPreviewImageUrl("");
+    setImageUrl(f.imageUrl);
+    setImageFile();
+  }, [show]);
+
   const handleSave = () => {
     const updatedFlashcard: flashcard = {
       ...f,
     };
-
-    //updatedFlashcard.imageUrl = imageUrl;
     updatedFlashcard.description = description;
     updatedFlashcard.keyPhrase = keyPhrase;
+    updatedFlashcard.imageUrl = imageUrl;
+
+    if (!imageUrl && updatedFlashcard.imageId && !previewImageUrl) {
+      deleteImage(currentUser.uid, subjectId, updatedFlashcard);
+      return;
+    } else if (imageFile) {
+      uploadImage(currentUser.uid, subjectId, imageFile, updatedFlashcard);
+      return;
+    }
 
     editFlashcard(currentUser.uid, subjectId, updatedFlashcard);
-    setShow(false);
   };
-  
+
   const handleShow = () => setShow(true);
 
   const handleToggleDescription = () => {
@@ -63,21 +83,28 @@ export default function FlashCard({
     editFlashcard(currentUser.uid, subjectId, updatedFlashcard);
   };
 
-  const handleImageChange = (e: any) => {
-    if (e.target.files[0]) {
-      setImageFile(e.target.files[0]);
+  const handleImageChange = (file: any) => {
+    if (!file) {
+      setError("The submitted item is not a valid file");
+      return;
+    } else if (!checkFileIsImage(file)) {
+      setError("The submitted file is not an image");
+      return;
+    } else if (!checkValidFileSize(file)) {
+      setError(
+        "The submitted image must be less than " + imageSizeLimit + " MB"
+      );
+      return;
     }
-  };
 
-  const handleImageUpload = () => {
-    if ((imageFile instanceof File)) {
-      uploadImage(currentUser.uid, subjectId, imageFile, f);
-    }
-    
+    setPreviewImageUrl(URL.createObjectURL(file));
+    setImageFile(file);
   };
 
   const handleDeleteImage = () => {
-    deleteImage(currentUser.uid, subjectId, f);
+    setPreviewImageUrl("");
+    setImageUrl("");
+    setImageFile();
   };
 
   return (
@@ -141,18 +168,11 @@ export default function FlashCard({
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Add a description for this keyword"
           ></Form.Control>
-          {/*<Form.Control
-            defaultValue={f.imageUrl}
-            style={{ border: 0 }}
-            onChange={(e) => setImage(e.target.value)}
-            placeholder="Add an image URL"
-          ></Form.Control>*/}
-          <Form.Group controlId="formFile" className="mb-3">
-            <Form.Label>Select Image</Form.Label>
-            <Form.Control type="file" onChange={handleImageChange} accept="image/*"/>
-            <Button onClick={handleImageUpload}>Submit</Button>
-            <Button onClick={handleDeleteImage}>Delete Image</Button>
-          </Form.Group>
+          {ImageDropContainer(
+            previewImageUrl || imageUrl,
+            handleImageChange,
+            handleDeleteImage
+          )}
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={handleClose}>

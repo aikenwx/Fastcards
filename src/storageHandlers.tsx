@@ -9,17 +9,12 @@ import { storage } from "./firebase";
 import { flashcard } from "./types";
 import { editFlashcard } from "./databaseHandlers";
 import { imageSizeLimit } from "./globalVariables";
+import { checkFileIsImage, checkValidFileSize } from "./helperFunctions";
 
 const uuid = require("uuid");
 const uuidv4 = uuid.v4;
 
-const checkFileIsImage = (file: File) => {
-  return file && file["type"].split("/")[0] === "image";
-};
 
-const checkValidFileSize = (file: File) => {
-  return file.size < imageSizeLimit * 1024 * 1024;
-};
 
 export const uploadImage = (
   uid: string,
@@ -37,7 +32,6 @@ export const uploadImage = (
       deleteObject(ref(storage, "images/" + flashcard.imageId));
     }
     const imageId = uuidv4();
-
     const storageRef = ref(storage, "images/" + imageId);
 
     uploadBytes(storageRef, file).then(() =>
