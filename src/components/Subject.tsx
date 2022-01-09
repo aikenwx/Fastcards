@@ -36,14 +36,6 @@ export default function Subject() {
     }
   };
 
-  // const handleDelete = (flashcardId: string) => {
-  //   try {
-  //     deleteFlashcard(currentUser.uid, subjectId || "", flashcardId);
-  //   } catch (error: any) {
-  //     console.log(error.message);
-  //   }
-  // };
-
   useEffect(() => {
     onValue(
       ref(
