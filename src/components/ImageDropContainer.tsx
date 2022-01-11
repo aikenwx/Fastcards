@@ -1,45 +1,91 @@
-import React, { useRef, useState } from "react";
-import { Dropdown, Form, Image } from "react-bootstrap";
+import React, { useRef, useState, useCallback } from "react";
+import { Button, Form } from "react-bootstrap";
 import "../styles/imageDropBox.css";
 import { Upload } from "react-bootstrap-icons";
+import Cropper from "react-easy-crop";
+import FlashcardImage from "./FlashcardImage";
+import { ImageConfig, Crop } from "./FlashCard";
 
 export default function ImageDropContainer(
-  src: string,
+  imageConfig: ImageConfig,
+  crop: Crop,
+  scale: number,
+  rotation: number,
+  setCrop: (crop: Crop) => void,
+  setRotation: (rotation: number) => void,
+  setScale: (scale: number) => void,
   handleImageChange: (e: any) => void,
   handleDeleteImage: () => void
 ) {
   const hiddenFileInput: any = useRef(null);
   const secondHiddenFileInput: any = useRef(null);
+
   const [showToggle, setShowToggle]: any = useState(false);
-  
+
+  const greaterHeightCropper = (src: string) => (
+    <Cropper
+      image={src}
+      crop={crop}
+      zoom={scale}
+      objectFit="horizontal-cover"
+      rotation={rotation}
+      aspect={1}
+      onCropChange={setCrop}
+      onZoomChange={setScale}
+    />
+  );
+
+  const greaterLengthCropper = (src: string) => (
+    <Cropper
+      image={src}
+      crop={crop}
+      zoom={scale}
+      objectFit="vertical-cover"
+      rotation={rotation}
+      aspect={1}
+      onCropChange={setCrop}
+      onZoomChange={setScale}
+      onRotationChange={setRotation}
+    />
+  );
+
   const handleClick = (e: any) => {
     hiddenFileInput.current.click();
   };
 
-  const secondHandleClick = (e: any) => {
-      secondHiddenFileInput.current.click()
-  }
-
-  const imageElementConfig = {
-      onMouseEnter:() => setShowToggle(true),
-      onMouseLeave:() => setShowToggle(false)
-  };
-
-  if (src) {
+  if (imageConfig.imageUrl) {
     return (
-      <div
-        {...imageElementConfig}
-      >
-        {showToggle && (
-          <Dropdown>
-            <Dropdown.Toggle className="position-absolute" variant="light"></Dropdown.Toggle>
-            <Dropdown.Menu>
-              <Dropdown.Item onClick={secondHandleClick}>Choose New Image</Dropdown.Item>
-              <Dropdown.Item onClick={handleDeleteImage}>Delete Image</Dropdown.Item>
-            </Dropdown.Menu>
-          </Dropdown>
+      <div className="">
+        {!showToggle && (
+          <div
+            className="d-flex flex-column justify-content-center align-items-center"
+            onClick={() => setShowToggle(true)}
+          >
+            {FlashcardImage(imageConfig)}
+          </div>
         )}
-        <Image src={src} rounded />
+        {showToggle && (
+          <div className="d-flex flex-column justify-content-center align-items-center">
+            <div className="crop-container">
+              {imageConfig.imageHeight > imageConfig.imageWidth
+                ? greaterHeightCropper(imageConfig.imageUrl)
+                : greaterLengthCropper(imageConfig.imageUrl)}
+            </div>
+            <Form.Label>Rotation</Form.Label>
+            <Form.Range
+              min={0}
+              max={360}
+              value={imageConfig.rotation}
+              onChange={(e) => {
+                setRotation(parseInt(e.target.value));
+              }}
+            ></Form.Range>
+            <div>
+              <Button className="m-2" onClick={handleDeleteImage}>Delete Image</Button>
+              <Button className="m-2" onClick={() => setShowToggle(false)}>Done</Button>
+            </div>
+          </div>
+        )}
         <input
           type="file"
           ref={secondHiddenFileInput}

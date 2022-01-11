@@ -6,7 +6,7 @@ import { flashcard } from "../types";
 import { onValue, ref } from "firebase/database";
 import NavBar from "./NavBar";
 import {
-  addFlashcard,
+  createNewFlashcard,
   deleteFlashcard,
   editFlashcard,
 } from "../databaseHandlers";
@@ -21,16 +21,7 @@ export default function Subject() {
 
   const handleAdd = () => {
     try {
-      addFlashcard(
-        currentUser.uid,
-        params.subjectId || "",
-        "Untitled",
-        "",
-        "",
-        "",
-        true,
-        true
-      );
+      createNewFlashcard(currentUser.uid, params.subjectId || "", "Untitled");
     } catch (error: any) {
       console.log(error.message);
     }

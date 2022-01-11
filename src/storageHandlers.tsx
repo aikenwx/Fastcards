@@ -10,17 +10,19 @@ import { flashcard } from "./types";
 import { editFlashcard } from "./databaseHandlers";
 import { imageSizeLimit } from "./globalVariables";
 import { checkFileIsImage, checkValidFileSize } from "./helperFunctions";
+import { blankImageConfig, ImageConfig } from "./components/FlashCard";
 
 const uuid = require("uuid");
 const uuidv4 = uuid.v4;
 
 
 
-export const uploadImage = (
+export const uploadImageAndUpdateFlashcard = (
   uid: string,
   subjectId: string,
   file: File,
-  flashcard: flashcard
+  originalFlashcard: flashcard,
+  updatedFlashcard: flashcard,
 ) => {
   if (!checkFileIsImage(file)) {
     throw "File is not an image";
@@ -28,16 +30,14 @@ export const uploadImage = (
     throw "Image must be less than " + imageSizeLimit + " MB";
   } else {
     // delete current image from storage, if any
-    if (flashcard.imageId) {
-      deleteObject(ref(storage, "images/" + flashcard.imageId));
+    if (originalFlashcard.imageId) {
+      deleteObject(ref(storage, "images/" + originalFlashcard.imageId));
     }
-    const imageId = uuidv4();
-    const storageRef = ref(storage, "images/" + imageId);
-
+    // move to front end
+    // const imageId = uuidv4();
+    const storageRef = ref(storage, "images/" + updatedFlashcard.imageId);
     uploadBytes(storageRef, file).then(() =>
       getDownloadURL(storageRef).then((url) => {
-        const updatedFlashcard: flashcard = { ...flashcard };
-        updatedFlashcard.imageId = imageId;
         updatedFlashcard.imageUrl = url;
         editFlashcard(uid, subjectId, updatedFlashcard);
       })
@@ -46,15 +46,9 @@ export const uploadImage = (
 };
 
 export const deleteImage = (
-  uid: string,
-  subjectId: string,
-  flashcard: flashcard
+  originalFlashcard: flashcard
 ) => {
-  deleteObject(ref(storage, "images/" + flashcard.imageId));
-  const updatedFlashcard: flashcard = { ...flashcard };
-  updatedFlashcard.imageId = "";
-  updatedFlashcard.imageUrl = "";
-  editFlashcard(uid, subjectId, updatedFlashcard);
+  deleteObject(ref(storage, "images/" + originalFlashcard.imageId));
 };
 
 export const deleteObjects = (path: string, objects: string[]) => {

@@ -1,22 +1,56 @@
 import React, { useState, useEffect } from "react";
 import { editFlashcard, deleteFlashcard } from "../databaseHandlers";
-import { ThreeDots } from "react-bootstrap-icons";
 import { flashcard } from "../types";
 import { useAuth } from "../contexts/AuthContext";
 import "../styles/dropdown.css";
+import { Dropdown, Form, Modal, Button, Card } from "react-bootstrap";
+import { deleteImage, uploadImageAndUpdateFlashcard } from "../storageHandlers";
 import {
-  Dropdown,
-  Form,
-  ButtonGroup,
-  Modal,
-  Button,
-  Card,
-  Image,
-} from "react-bootstrap";
-import { deleteImage, uploadImage } from "../storageHandlers";
-import { checkFileIsImage, checkValidFileSize } from "../helperFunctions";
+  checkFileIsImage,
+  checkValidFileSize,
+  getHeightAndWidthFromDataUrl,
+} from "../helperFunctions";
 import { imageSizeLimit } from "../globalVariables";
 import ImageDropContainer from "./ImageDropContainer";
+import FlashcardImage from "./FlashcardImage";
+import { AspectRatio } from "react-bootstrap-icons";
+
+export type ImageConfig = {
+  imageId: string;
+  imageUrl: string;
+  translateX: number;
+  translateY: number;
+  scale: number;
+  rotation: number;
+  imageWidth: number;
+  imageHeight: number;
+};
+
+export const blankImageConfig: ImageConfig = {
+  imageId: "",
+  imageUrl: "",
+  translateX: 0,
+  translateY: 0,
+  scale: 1,
+  rotation: 0,
+  imageWidth: 0,
+  imageHeight: 0,
+};
+
+export type Crop = {
+  x: number;
+  y: number;
+};
+
+export type ImageDimensions = {
+  imageWidth: number;
+  imageHeight: number;
+};
+
+export type ImageKey = {
+  imageId: string;
+  imageUrl: string;
+};
 
 export default function FlashCard({
   f,
@@ -26,38 +60,102 @@ export default function FlashCard({
   subjectId: string;
 }) {
   const { currentUser } = useAuth();
+  const [show, setShow] = useState(false);
+  const [error, setError] = useState("");
+
   const [keyPhrase, setKeyPhrase]: any = useState(f.keyPhrase);
   const [description, setDescription]: any = useState(f.description);
-  const [imageUrl, setImageUrl]: any = useState(f.imageUrl);
 
-  const [show, setShow] = useState(false);
+  const [crop, setCrop]: [Crop, any] = useState({
+    x: f.translateX,
+    y: f.translateY,
+  });
+
+  const [imageKey, setImageKey]: [ImageKey, any] = useState({ ...f });
+  const [scale, setScale] = useState(f.scale);
+  const [rotation, setRotation] = useState(f.rotation);
+  const [imageDimensions, setImageDimensions]: [ImageDimensions, any] =
+    useState({ ...f });
+
+  const imageConfig: ImageConfig = {
+    ...imageKey,
+    ...imageDimensions,
+    scale: scale,
+    rotation: rotation,
+    translateX: crop.x,
+    translateY: crop.y,
+  };
+
+  const setImageConfig = (imageConfig: ImageConfig) => {
+    if (
+      imageConfig.imageId !== f.imageId ||
+      imageConfig.imageUrl !== f.imageUrl
+    ) {
+      setImageKey({ ...imageConfig });
+    }
+
+    if (
+      imageConfig.imageHeight !== f.imageHeight ||
+      imageConfig.imageWidth !== f.imageHeight
+    ) {
+      setImageDimensions({ ...imageConfig });
+    }
+
+    if (imageConfig.rotation !== f.rotation) {
+      setRotation(imageConfig.rotation);
+    }
+
+    if (imageConfig.scale !== f.scale) {
+      setScale(imageConfig.scale);
+    }
+
+    if (
+      imageConfig.translateX !== f.translateX ||
+      imageConfig.translateX !== f.translateX
+    ) {
+      setCrop({ x: imageConfig.translateX, y: imageConfig.translateY });
+    }
+  };
+
   const [imageFile, setImageFile]: any = useState();
-  const [previewImageUrl, setPreviewImageUrl]: [string, any] = useState("");
-  const [error, setError] = useState("");
+
+  const uuid = require("uuid");
+  const uuidv4 = uuid.v4;
 
   const handleClose = () => {
     setShow(false);
   };
 
+  // reset data once modal flashcard is closed
   useEffect(() => {
-    setPreviewImageUrl("");
-    setImageUrl(f.imageUrl);
     setImageFile();
+    setImageConfig({ ...f });
   }, [show]);
 
   const handleSave = () => {
     const updatedFlashcard: flashcard = {
       ...f,
+      ...imageConfig,
     };
+
     updatedFlashcard.description = description;
     updatedFlashcard.keyPhrase = keyPhrase;
-    updatedFlashcard.imageUrl = imageUrl;
 
-    if (!imageUrl && updatedFlashcard.imageId && !previewImageUrl) {
-      deleteImage(currentUser.uid, subjectId, updatedFlashcard);
+    // previous image id is deleted
+    if (f.imageId && !updatedFlashcard.imageId) {
+      deleteImage(f);
+      editFlashcard(currentUser.uid, subjectId, updatedFlashcard);
       return;
-    } else if (imageFile) {
-      uploadImage(currentUser.uid, subjectId, imageFile, updatedFlashcard);
+    }
+    // original and updated imageIds are not the same
+    else if (f.imageId !== updatedFlashcard.imageId) {
+      uploadImageAndUpdateFlashcard(
+        currentUser.uid,
+        subjectId,
+        imageFile,
+        f,
+        updatedFlashcard
+      );
       return;
     }
 
@@ -96,28 +194,35 @@ export default function FlashCard({
       );
       return;
     }
+    const updatedImageConfig = { ...imageConfig };
 
-    setPreviewImageUrl(URL.createObjectURL(file));
-    setImageFile(file);
+    const url = URL.createObjectURL(file);
+    const imageId = uuidv4();
+
+    getHeightAndWidthFromDataUrl(url).then((dimensions: any) => {
+      updatedImageConfig.imageHeight = dimensions.height;
+      updatedImageConfig.imageWidth = dimensions.width;
+      updatedImageConfig.imageId = imageId;
+      updatedImageConfig.imageUrl = url;
+      setImageConfig(updatedImageConfig);
+      setImageFile(file);
+    });
   };
 
   const handleDeleteImage = () => {
-    setPreviewImageUrl("");
-    setImageUrl("");
+    setImageConfig({ ...blankImageConfig });
     setImageFile();
   };
 
   return (
     <div className="container mt-3">
       <Card className="card" style={{ width: "18rem" }} onClick={handleShow}>
-        <div className="card-body">
+        <div className="card-body" style={{objectFit:"contain"}}>
           <div className="card-title">{f.keyPhrase}</div>
           {f.isDescriptionVisible && (
             <p className="card-text">{f.description}</p>
           )}
-          {f.isImageVisible && f.imageUrl && (
-            <img className="card-img-bottom" src={f.imageUrl} />
-          )}
+          {f.isImageVisible && f.imageUrl && FlashcardImage(imageConfig)}
         </div>
       </Card>
       <Modal show={show} onHide={handleClose}>
@@ -169,7 +274,13 @@ export default function FlashCard({
             placeholder="Add a description for this keyword"
           ></Form.Control>
           {ImageDropContainer(
-            previewImageUrl || imageUrl,
+            imageConfig,
+            crop,
+            scale,
+            rotation,
+            setCrop,
+            setRotation,
+            setScale,
             handleImageChange,
             handleDeleteImage
           )}
