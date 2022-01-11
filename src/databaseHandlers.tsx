@@ -1,8 +1,8 @@
 import { db } from "./firebase";
-import { push, ref, remove , update } from "firebase/database";
+import { push, ref, remove, update } from "firebase/database";
 import { flashcard, subject } from "./types";
 import { deleteImage, deleteObjects } from "./storageHandlers";
-
+import { blankImageConfig } from "./components/FlashCard";
 
 export const addSubject = (uid: string, subjectName: string) => {
   push(ref(db, "Users/" + uid + "/Subjects"), {
@@ -10,24 +10,63 @@ export const addSubject = (uid: string, subjectName: string) => {
   });
 };
 
-export const addFlashcard = (
+export type UploadedFlashcard = {
+  keyPhrase: string;
+  imageId: string;
+  imageUrl: string;
+  description: string;
+  imageHeight: number;
+  imageWidth: number;
+  translateY: number;
+  translateX: number;
+  rotation: number;
+  scale: number;
+  isDescriptionVisible: boolean;
+  isImageVisible: boolean;
+  isFlipped: boolean;
+};
+
+export const blankUploadedFlashcard: UploadedFlashcard = {
+  keyPhrase: "",
+  description: "",
+  isDescriptionVisible: false,
+  isImageVisible: false,
+  isFlipped: false,
+  ...blankImageConfig,
+};
+
+// export const addFlashcard = (
+//   uid: string,
+//   subjectId: string,
+//   keyPhrase: string,
+//   imageId: string,
+//   imageUrl: string,
+//   description: string,
+//   isDescriptionVisible: boolean,
+//   isImageVisible: boolean
+// ) => {
+//   push(ref(db, "Users/" + uid + "/Subjects/" + subjectId + "/Flashcards"), {
+//     keyPhrase: keyPhrase,
+//     imageId: imageId,
+//     imageUrl: imageUrl,
+//     description: description,
+//     isDescriptionVisible: isDescriptionVisible,
+//     isImageVisible: isImageVisible,
+//   });
+// };
+
+export const createNewFlashcard = (
   uid: string,
   subjectId: string,
-  keyPhrase: string,
-  imageId: string,
-  imageUrl: string,
-  description: string,
-  isDescriptionVisible: boolean,
-  isImageVisible: boolean
+  keyPhrase: string
 ) => {
-  push(ref(db, "Users/" + uid + "/Subjects/" + subjectId + "/Flashcards"), {
-    keyPhrase: keyPhrase,
-    imageId: imageId,
-    imageUrl: imageUrl,
-    description: description,
-    isDescriptionVisible: isDescriptionVisible,
-    isImageVisible: isImageVisible,
-  });
+  const newFlashcard: UploadedFlashcard = { ...blankUploadedFlashcard };
+  newFlashcard.keyPhrase = keyPhrase;
+
+  push(
+    ref(db, "Users/" + uid + "/Subjects/" + subjectId + "/Flashcards"),
+    newFlashcard
+  );
 };
 
 export const deleteFlashcard = (
@@ -43,60 +82,60 @@ export const deleteFlashcard = (
   );
 };
 
-export const deleteSubject = (
-  uid: string,
-  subject: any
-) => {
-  
-  const imageIds:string[] = []
-  
+export const deleteSubject = (uid: string, subject: any) => {
+  const imageIds: string[] = [];
+
   for (const flashcard in subject.Flashcards) {
-    imageIds.push(subject.Flashcards[flashcard].imageId)
+    imageIds.push(subject.Flashcards[flashcard].imageId);
   }
-  
-  remove(
-    ref(
-      db, 
-      "Users/" + uid + "/Subjects/" + subject.subjectId
-    )
-  ).then(()=>deleteObjects("images/", imageIds))
-}
+
+  remove(ref(db, "Users/" + uid + "/Subjects/" + subject.subjectId)).then(() =>
+    deleteObjects("images/", imageIds)
+  );
+};
 
 export const renameSubject = (
   uid: string,
   subjectId: string,
   newName: string
 ) => {
-
-
-  update(
-    ref(
-      db, 
-      "Users/" + uid + "/Subjects/" + subjectId
-    ),  {name: newName}
-  )
-}
+  update(ref(db, "Users/" + uid + "/Subjects/" + subjectId), { name: newName });
+};
 
 export const editFlashcard = (
   uid: string,
-  subjectId:string,
+  subjectId: string,
   flashcard: flashcard
 ) => {
+  const uploadedCard: {
+    keyPhrase: string;
+    imageId: string;
+    imageUrl: string;
+    imageHeight: number;
+    imageWidth: number;
+    translateY: number;
+    translateX: number;
+    rotation: number;
+    scale: number;
+    description: string;
+    isDescriptionVisible: boolean;
+    isImageVisible: boolean;
+    isFlipped: boolean;
+  } = { ...flashcard };
+
   update(
     ref(
       db,
-      "Users/"+ uid + "/Subjects/" + subjectId + "/Flashcards/" + flashcard.flashcardId
-      ), {
-        keyPhrase: flashcard.keyPhrase,
-        imageId: flashcard.imageId,
-        imageUrl: flashcard.imageUrl,
-        description: flashcard.description,
-        isDescriptionVisible: flashcard.isDescriptionVisible,
-        isImageVisible: flashcard.isImageVisible
-      }
-  )
-}
-
+      "Users/" +
+        uid +
+        "/Subjects/" +
+        subjectId +
+        "/Flashcards/" +
+        flashcard.flashcardId
+    ),
+    uploadedCard
+  );
+};
 // export const updateFlashcard = (
 //   uid: string,
 //   subjectId:string,
@@ -115,7 +154,6 @@ export const editFlashcard = (
 //   if (keyPhrase) {
 //     flashcardId + {keyPhrase: keyPhrase}
 //   }
-  
 
 //   update(
 //     ref(
