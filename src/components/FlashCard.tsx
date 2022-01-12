@@ -1,56 +1,35 @@
-import React, { useState, useEffect } from "react";
+import React, { useRef, useState, useEffect, useLayoutEffect } from "react";
 import { editFlashcard, deleteFlashcard } from "../databaseHandlers";
-import { flashcard } from "../types";
+import {
+  Crop,
+  flashcard,
+  ImageKey,
+  ImageConfig,
+  ImageDimensions,
+} from "../types";
 import { useAuth } from "../contexts/AuthContext";
-import "../styles/dropdown.css";
-import { Dropdown, Form, Modal, Button, Card } from "react-bootstrap";
+import {
+  Dropdown,
+  Form,
+  Modal,
+  Button,
+  Card,
+  Alert,
+  Container,
+} from "react-bootstrap";
 import { deleteImage, uploadImageAndUpdateFlashcard } from "../storageHandlers";
 import {
   checkFileIsImage,
   checkValidFileSize,
   getHeightAndWidthFromDataUrl,
 } from "../helperFunctions";
-import { imageSizeLimit } from "../globalVariables";
+import {
+  displayImageWidth,
+  imageSizeLimit,
+  blankImageConfig,
+} from "../globalVariables";
 import ImageDropContainer from "./ImageDropContainer";
 import FlashcardImage from "./FlashcardImage";
-import { AspectRatio } from "react-bootstrap-icons";
-
-export type ImageConfig = {
-  imageId: string;
-  imageUrl: string;
-  translateX: number;
-  translateY: number;
-  scale: number;
-  rotation: number;
-  imageWidth: number;
-  imageHeight: number;
-};
-
-export const blankImageConfig: ImageConfig = {
-  imageId: "",
-  imageUrl: "",
-  translateX: 0,
-  translateY: 0,
-  scale: 1,
-  rotation: 0,
-  imageWidth: 0,
-  imageHeight: 0,
-};
-
-export type Crop = {
-  x: number;
-  y: number;
-};
-
-export type ImageDimensions = {
-  imageWidth: number;
-  imageHeight: number;
-};
-
-export type ImageKey = {
-  imageId: string;
-  imageUrl: string;
-};
 
 export default function FlashCard({
   f,
@@ -59,9 +38,15 @@ export default function FlashCard({
   f: flashcard;
   subjectId: string;
 }) {
+  const uuid = require("uuid");
+  const uuidv4 = uuid.v4;
+
   const { currentUser } = useAuth();
   const [show, setShow] = useState(false);
   const [error, setError] = useState("");
+  const [isSaved, setIsSaved] = useState(true);
+  const [textScrollHeight, setTextScrollHeight] = useState(38);
+  const [showCropper, setShowCropper] = useState(false);
 
   const [keyPhrase, setKeyPhrase]: any = useState(f.keyPhrase);
   const [description, setDescription]: any = useState(f.description);
@@ -70,12 +55,34 @@ export default function FlashCard({
     x: f.translateX,
     y: f.translateY,
   });
-
   const [imageKey, setImageKey]: [ImageKey, any] = useState({ ...f });
   const [scale, setScale] = useState(f.scale);
   const [rotation, setRotation] = useState(f.rotation);
   const [imageDimensions, setImageDimensions]: [ImageDimensions, any] =
     useState({ ...f });
+  const [imageFile, setImageFile]: any = useState();
+
+  const textAreaRef: any = useRef();
+  // reset data once modal flashcard is closed
+  useEffect(
+    () => setIsSaved(false),
+    [
+      keyPhrase,
+      description,
+      imageKey,
+      scale,
+      crop,
+      rotation,
+      imageDimensions,
+      imageFile,
+    ]
+  );
+
+  useEffect(() => {
+    if (textAreaRef.current) {
+      setTextScrollHeight(textAreaRef.current.scrollHeight + 2);
+    }
+  }, [show]);
 
   const imageConfig: ImageConfig = {
     ...imageKey,
@@ -87,51 +94,22 @@ export default function FlashCard({
   };
 
   const setImageConfig = (imageConfig: ImageConfig) => {
-    if (
-      imageConfig.imageId !== f.imageId ||
-      imageConfig.imageUrl !== f.imageUrl
-    ) {
-      setImageKey({ ...imageConfig });
-    }
-
-    if (
-      imageConfig.imageHeight !== f.imageHeight ||
-      imageConfig.imageWidth !== f.imageHeight
-    ) {
-      setImageDimensions({ ...imageConfig });
-    }
-
-    if (imageConfig.rotation !== f.rotation) {
-      setRotation(imageConfig.rotation);
-    }
-
-    if (imageConfig.scale !== f.scale) {
-      setScale(imageConfig.scale);
-    }
-
-    if (
-      imageConfig.translateX !== f.translateX ||
-      imageConfig.translateX !== f.translateX
-    ) {
-      setCrop({ x: imageConfig.translateX, y: imageConfig.translateY });
-    }
+    setImageKey({ ...imageConfig });
+    setImageDimensions({ ...imageConfig });
+    setRotation(imageConfig.rotation);
+    setScale(imageConfig.scale);
+    setCrop({ x: imageConfig.translateX, y: imageConfig.translateY });
   };
-
-  const [imageFile, setImageFile]: any = useState();
-
-  const uuid = require("uuid");
-  const uuidv4 = uuid.v4;
 
   const handleClose = () => {
     setShow(false);
-  };
-
-  // reset data once modal flashcard is closed
-  useEffect(() => {
+    setError("");
+    setKeyPhrase(f.keyPhrase);
+    setDescription(f.description);
     setImageFile();
     setImageConfig({ ...f });
-  }, [show]);
-
+    setShowCropper(false);
+  };
   const handleSave = () => {
     const updatedFlashcard: flashcard = {
       ...f,
@@ -145,6 +123,7 @@ export default function FlashCard({
     if (f.imageId && !updatedFlashcard.imageId) {
       deleteImage(f);
       editFlashcard(currentUser.uid, subjectId, updatedFlashcard);
+      setIsSaved(true);
       return;
     }
     // original and updated imageIds are not the same
@@ -156,10 +135,13 @@ export default function FlashCard({
         f,
         updatedFlashcard
       );
+      setIsSaved(true);
+
       return;
     }
 
     editFlashcard(currentUser.uid, subjectId, updatedFlashcard);
+    setIsSaved(true);
   };
 
   const handleShow = () => setShow(true);
@@ -182,6 +164,7 @@ export default function FlashCard({
   };
 
   const handleImageChange = (file: any) => {
+    setError("");
     if (!file) {
       setError("The submitted item is not a valid file");
       return;
@@ -208,27 +191,38 @@ export default function FlashCard({
       setImageFile(file);
     });
   };
-
+  console.log(f.description);
   const handleDeleteImage = () => {
     setImageConfig({ ...blankImageConfig });
     setImageFile();
   };
-
   return (
-    <div className="container mt-3">
-      <Card className="card" style={{ width: "18rem" }} onClick={handleShow}>
-        <div className="card-body" style={{objectFit:"contain"}}>
-          <div className="card-title">{f.keyPhrase}</div>
-          {f.isDescriptionVisible && (
-            <p className="card-text">{f.description}</p>
-          )}
-          {f.isImageVisible && f.imageUrl && FlashcardImage(imageConfig)}
-        </div>
+    <Container className="m-3">
+      <Card
+        className="card"
+        style={{ width: `${displayImageWidth}rem`, overflow: "hidden", minHeight: `${displayImageWidth}rem`}}
+        onClick={handleShow}
+      >
+        {f.isImageVisible &&
+          f.imageUrl &&
+          FlashcardImage({ ...f }, displayImageWidth)}
+        {(f.keyPhrase || (f.isDescriptionVisible && f.description)) && (
+          <Card.Body>
+            <Card.Title>{f.keyPhrase}</Card.Title>
+            {f.isDescriptionVisible && (
+              <Card.Text style={{ whiteSpace: "normal" }}>
+                {" "}
+                {f.description}
+              </Card.Text>
+            )}
+          </Card.Body>
+        )}
       </Card>
-      <Modal show={show} onHide={handleClose}>
+      <Modal show={show} onExited={handleClose} onShow={() => setIsSaved(true)}>
         <Modal.Header>
           <Form.Control
             className="m-2"
+            placeholder="Add a key phrase"
             defaultValue={f.keyPhrase}
             style={{ border: 0, fontSize: 30 }}
             onChange={(e) => setKeyPhrase(e.target.value)}
@@ -267,17 +261,25 @@ export default function FlashCard({
         </Modal.Header>
         <Modal.Body>
           <Form.Control
+            ref={textAreaRef}
+            as="textarea"
             className={"mb-2"}
             defaultValue={f.description}
-            style={{ border: 0, display: "inline-block" }}
-            onChange={(e) => setDescription(e.target.value)}
-            placeholder="Add a description for this keyword"
+            style={{ height: textScrollHeight }}
+            onChange={(e) => {
+              setTextScrollHeight(e.target.scrollHeight + 2);
+              setDescription(e.target.value);
+            }}
+            placeholder="Add a description"
           ></Form.Control>
+          {error && <Alert variant="danger">{error}</Alert>}
           {ImageDropContainer(
             imageConfig,
             crop,
             scale,
             rotation,
+            showCropper,
+            setShowCropper,
             setCrop,
             setRotation,
             setScale,
@@ -289,11 +291,11 @@ export default function FlashCard({
           <Button variant="secondary" onClick={handleClose}>
             Close
           </Button>
-          <Button variant="primary" onClick={handleSave}>
+          <Button variant="primary" disabled={isSaved} onClick={handleSave}>
             Save Changes
           </Button>
         </Modal.Footer>
       </Modal>
-    </div>
+    </Container>
   );
 }
