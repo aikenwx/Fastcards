@@ -1,6 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { Plus } from "react-bootstrap-icons";
-import { Dropdown, Form, ButtonGroup, Container } from "react-bootstrap";
+import {
+  Dropdown,
+  Nav,
+  Form,
+  ButtonGroup,
+  Container,
+  Row,
+  Navbar,
+} from "react-bootstrap";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import NavBar from "./NavBar";
@@ -8,6 +16,8 @@ import { db } from "../firebase";
 import { onValue, ref } from "firebase/database";
 import { addSubject, deleteSubject, renameSubject } from "../databaseHandlers";
 import { subject } from "../types";
+import DropDown from "./DropDown";
+import SideBar from "./SideBar";
 
 export default function Dashboard() {
   const { currentUser } = useAuth();
@@ -49,83 +59,28 @@ export default function Dashboard() {
   }
 
   return (
-    <>
-      <NavBar />
-      <Container>
-        <div>
-          {subjects.map((subject: subject) => (
-            <div key={subject.subjectId} className="mt-2">
-              <Dropdown
-                as={ButtonGroup}
-                onToggle={() => {
-                  if (open && subject.subjectId == currKey) {
-                    setOpen(false);
-                    setCurrKey("");
-                  } else {
-                    setOpen(true);
-                    setCurrKey(subject.subjectId);
-                  }
-                }}
-                show={open && currKey == subject.subjectId}
-              >
-                <Link
-                  className="btn btn-primary"
-                  to={"subject/" + subject.subjectId}
-                >
-                  {subject.name}
-                </Link>
-
-                <Dropdown.Toggle split id="dropdown-split-basic" />
-
-                <Dropdown.Menu>
-                  <Dropdown.Item href="#/action-1">
-                    <Form
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                      }}
-                    >
-                      <Form.Label>Rename Subject</Form.Label>
-                      <Form.Control
-                        placeholder={subject.name}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                        }}
-                        onBlur={(e) =>
-                          renameSubject(
-                            currentUser.uid,
-                            subject.subjectId,
-                            e.target.value
-                          )
-                        }
-                        onKeyDown={(e) => {
-                          if (e.key == "Enter") {
-                            setOpen(!open);
-                            setCurrKey(subject.subjectId);
-                          }
-                        }}
-                      />
-                    </Form>
-                  </Dropdown.Item>
-                  <Dropdown.Item
-                    href="#/action-2"
-                    onClick={() =>
-                      deleteSubject(currentUser.uid, subject)
-                    }
-                  >
-                    Delete Subject
-                  </Dropdown.Item>
-                </Dropdown.Menu>
-              </Dropdown>
+    <div>
+      <NavBar></NavBar>
+      <div className="container-fluid">
+        <div className="row">
+          <nav
+            id="sidebarMenu"
+            className="col-md-auto col-lg-auto d-md-block mw-10 bg-light sidebar collapse show vh-100"
+          >
+            <div className="position-sticky pt-3">
+              <Nav className="flex-column">
+                {subjects.map((subject) => (
+                  <Nav.Item>
+                    <Nav.Link href={"subject/" + subject.subjectId}>
+                      {subject.name}
+                    </Nav.Link>
+                  </Nav.Item>
+                ))}
+              </Nav>
             </div>
-          ))}
+          </nav>
         </div>
-        <button className="btn btn-primary mt-2" onClick={handleSubmit}>
-          {"Add Subject"}
-          <Plus size={20}></Plus>
-        </button>
-      </Container>
-    </>
+      </div>
+    </div>
   );
 }

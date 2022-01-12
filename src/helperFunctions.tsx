@@ -1,3 +1,6 @@
+import { resolve } from "path/posix";
+import { Textarea } from "react-bootstrap-icons";
+import { text } from "stream/consumers";
 import { imageSizeLimit } from "./globalVariables";
 
 export const checkFileIsImage = (file: File) => {

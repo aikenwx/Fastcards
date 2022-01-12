@@ -1,16 +1,25 @@
 import React, { useRef, useState, useCallback } from "react";
-import { Button, Form } from "react-bootstrap";
+import {
+  Button,
+  Container,
+  Form,
+  OverlayTrigger,
+  Tooltip,
+} from "react-bootstrap";
 import "../styles/imageDropBox.css";
 import { Upload } from "react-bootstrap-icons";
 import Cropper from "react-easy-crop";
 import FlashcardImage from "./FlashcardImage";
-import { ImageConfig, Crop } from "./FlashCard";
+import { ImageConfig, Crop } from "../types";
+import { cropImageWidth } from "../globalVariables";
 
 export default function ImageDropContainer(
   imageConfig: ImageConfig,
   crop: Crop,
   scale: number,
   rotation: number,
+  showCropper: boolean,
+  setShowCropper: (bool: boolean) => void,
   setCrop: (crop: Crop) => void,
   setRotation: (rotation: number) => void,
   setScale: (scale: number) => void,
@@ -19,8 +28,6 @@ export default function ImageDropContainer(
 ) {
   const hiddenFileInput: any = useRef(null);
   const secondHiddenFileInput: any = useRef(null);
-
-  const [showToggle, setShowToggle]: any = useState(false);
 
   const greaterHeightCropper = (src: string) => (
     <Cropper
@@ -45,7 +52,6 @@ export default function ImageDropContainer(
       aspect={1}
       onCropChange={setCrop}
       onZoomChange={setScale}
-      onRotationChange={setRotation}
     />
   );
 
@@ -53,37 +59,96 @@ export default function ImageDropContainer(
     hiddenFileInput.current.click();
   };
 
+  const handleChooseNewImageClick = (e: any) => {
+    secondHiddenFileInput.current.click();
+  };
+
+  const renderDragHint = (props: any) => (
+    <Tooltip id="button-tooltip" {...props}>
+      Drag me!
+    </Tooltip>
+  );
+
+  const renderClickHint = (props: any) => (
+    <Tooltip id="button-tooltip" {...props}>
+      Click to edit
+    </Tooltip>
+  );
+
   if (imageConfig.imageUrl) {
     return (
       <div className="">
-        {!showToggle && (
+        {!showCropper && (
           <div
             className="d-flex flex-column justify-content-center align-items-center"
-            onClick={() => setShowToggle(true)}
+            onClick={() => setShowCropper(true)}
           >
-            {FlashcardImage(imageConfig)}
+            <OverlayTrigger
+              placement="right"
+              delay={{ show: 400, hide: 400 }}
+              overlay={renderClickHint}
+            >
+              {FlashcardImage(imageConfig, cropImageWidth)}
+            </OverlayTrigger>
           </div>
         )}
-        {showToggle && (
+
+        {showCropper && (
           <div className="d-flex flex-column justify-content-center align-items-center">
-            <div className="crop-container">
-              {imageConfig.imageHeight > imageConfig.imageWidth
-                ? greaterHeightCropper(imageConfig.imageUrl)
-                : greaterLengthCropper(imageConfig.imageUrl)}
-            </div>
-            <Form.Label>Rotation</Form.Label>
-            <Form.Range
-              min={0}
-              max={360}
-              value={imageConfig.rotation}
-              onChange={(e) => {
-                setRotation(parseInt(e.target.value));
-              }}
-            ></Form.Range>
-            <div>
-              <Button className="m-2" onClick={handleDeleteImage}>Delete Image</Button>
-              <Button className="m-2" onClick={() => setShowToggle(false)}>Done</Button>
-            </div>
+            <OverlayTrigger
+              placement="right"
+              delay={{ show: 400, hide: 400 }}
+              overlay={renderDragHint}
+            >
+              <div
+                className="crop-container"
+                style={{
+                  height: `${cropImageWidth}rem`,
+                  width: `${cropImageWidth}rem`,
+                }}
+              >
+                {imageConfig.imageHeight > imageConfig.imageWidth
+                  ? greaterHeightCropper(imageConfig.imageUrl)
+                  : greaterLengthCropper(imageConfig.imageUrl)}
+              </div>
+            </OverlayTrigger>
+
+            <Container>
+              <div className="d-flex justify-content-center align-items-center">
+                <Button
+                  className="m-2"
+                  variant="secondary"
+                  onClick={() => setShowCropper(false)}
+                >
+                  Done
+                </Button>
+                <Button className="m-2" onClick={handleDeleteImage}>
+                  Delete Image
+                </Button>
+
+                <Button className="m-2" onClick={handleChooseNewImageClick}>
+                  Choose New Image
+                </Button>
+              </div>
+              <Form.Label>Rotation</Form.Label>
+              <Form.Range
+                min={0}
+                max={360}
+                value={imageConfig.rotation}
+                onChange={(e) => {
+                  setRotation(parseInt(e.target.value));
+                }}
+              ></Form.Range>
+              <Form.Label>Zoom</Form.Label>
+              <Form.Range
+                min={100}
+                max={300}
+                value={imageConfig.scale * 100}
+                onChange={(e) => {
+                  setScale(parseInt(e.target.value) / 100);
+                }}
+              ></Form.Range>
+            </Container>
           </div>
         )}
         <input
@@ -118,19 +183,22 @@ export default function ImageDropContainer(
       e.preventDefault();
     },
     onClick: handleClick,
+    style: { height: `${cropImageWidth}rem`, width: `${cropImageWidth}rem` },
   };
 
   return (
-    <div {...dropContainerConfig}>
-      <Upload size="30" color="#0d6efd"></Upload>
-      Click to choose an image or drag it here
-      <input
-        type="file"
-        ref={hiddenFileInput}
-        onChange={(e: any) => handleImageChange(e.target.files[0])}
-        accept="image/*"
-        style={{ display: "none" }}
-      />
+    <div className="d-flex flex-column justify-content-center align-items-center">
+      <div {...dropContainerConfig}>
+        <Upload size="30" color="#0d6efd"></Upload>
+        Click to choose an image or drag it here
+        <input
+          type="file"
+          ref={hiddenFileInput}
+          onChange={(e: any) => handleImageChange(e.target.files[0])}
+          accept="image/*"
+          style={{ display: "none" }}
+        />
+      </div>
     </div>
   );
 }

@@ -1,8 +1,8 @@
 import { db } from "./firebase";
 import { push, ref, remove, update } from "firebase/database";
-import { flashcard, subject } from "./types";
-import { deleteImage, deleteObjects } from "./storageHandlers";
-import { blankImageConfig } from "./components/FlashCard";
+import { flashcard } from "./types";
+import { deleteObjects } from "./storageHandlers";
+import { blankImageConfig } from "./globalVariables";
 
 export const addSubject = (uid: string, subjectName: string) => {
   push(ref(db, "Users/" + uid + "/Subjects"), {

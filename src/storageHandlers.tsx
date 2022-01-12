@@ -4,13 +4,12 @@ import {
   ref,
   uploadBytes,
 } from "firebase/storage";
-import { stringify } from "querystring";
 import { storage } from "./firebase";
 import { flashcard } from "./types";
 import { editFlashcard } from "./databaseHandlers";
 import { imageSizeLimit } from "./globalVariables";
 import { checkFileIsImage, checkValidFileSize } from "./helperFunctions";
-import { blankImageConfig, ImageConfig } from "./components/FlashCard";
+
 
 const uuid = require("uuid");
 const uuidv4 = uuid.v4;
