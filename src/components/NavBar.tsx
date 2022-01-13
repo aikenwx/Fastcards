@@ -15,11 +15,11 @@ export default function NavBar() {
 
   return (
     <Navbar
-      className="flex-md-nowrap p-0"
+      className="flex-md-nowrap p-0 sticky-top"
       collapseOnSelect
       expand="lg"
-      bg="light"
-      variant="light"
+      bg="dark"
+      variant="dark"
     >
       <Navbar.Brand className="col-md-3 col-lg-4 me-0 px-4" href="/">
         FastCards
