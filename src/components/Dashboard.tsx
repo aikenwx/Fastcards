@@ -1,33 +1,19 @@
-import React, { useState, useEffect, useRef } from "react";
-import { Plus, Files, House, ThreeDots } from "react-bootstrap-icons";
-import {
-  Dropdown,
-  Nav,
-  Form,
-  ButtonGroup,
-  Container,
-  Row,
-  Navbar,
-  Spinner,
-} from "react-bootstrap";
-import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../contexts/AuthContext";
-import NavBar from "./NavBar";
-import { db } from "../firebase";
 import { onValue, ref } from "firebase/database";
+import React, { useEffect, useState } from "react";
 import {
-  addSubject,
-  createNewFlashcard,
-  deleteSubject,
-  renameSubject,
-} from "../databaseHandlers";
-import { subject, flashcard } from "../types";
-import DropDown from "./DropDown";
-import SideBar from "./SideBar";
-import "../styles/dashboard.scss";
-import "../styles/dashboard.scss";
+  ButtonGroup,
+  Container, Dropdown, Form, Nav, Spinner
+} from "react-bootstrap";
+import { Files, House, Plus, ThreeDots } from "react-bootstrap-icons";
+import { useParams } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
+import { addSubject, deleteSubject, renameSubject } from "../databaseHandlers";
+import { db } from "../firebase";
 import { cropImageWidth } from "../globalVariables";
+import "../styles/dashboard.scss";
+import { flashcard, subject } from "../types";
 import DisplayedSubject from "./DisplayedSubject";
+import NavBar from "./NavBar";
 
 export default function Dashboard() {
   const { currentUser } = useAuth();
@@ -39,8 +25,15 @@ export default function Dashboard() {
   const [hover, setHover]: any = useState(false);
   // const formRefs: any = useRef([]);
   const [subjectNames, setSubjectNames]: [string[], any] = useState([]);
+  const params = useParams();
+  const [subjectId, setSubjectId]: any = useState();
 
   //read
+
+  useEffect(() => {
+    setSubjectId(params.subjectId);
+  }, []);
+
   useEffect(() => {
     onValue(ref(db, "Users/" + currentUser.uid), (snapshot) => {
       const data = snapshot.val();
@@ -66,17 +59,13 @@ export default function Dashboard() {
             arr.push(item);
           });
         });
-        console.log(arr);
 
         setSubjects(arr);
         setSubjectNames(arr.map((x) => x.name));
-       
       } else setSubjects([]);
     });
-     setLoading(false);
+    setLoading(false);
   }, []);
-
-  console.log(subjectNames);
 
   if (loading) {
     return (
@@ -102,31 +91,34 @@ export default function Dashboard() {
     addSubject(currentUser.uid, "New Deck");
   }
 
-  // console.log(formRefs);
-
   const handleNameChange = (e: any, num: number) => {
-    console.log(e);
     const namesCopy = [...subjectNames];
-    console.log(namesCopy);
     namesCopy[num] = e.target.value;
     setSubjectNames(namesCopy);
   };
 
   const handleBlur = (subjectId: string, subjectName: string) =>
     renameSubject(currentUser.uid, subjectId, subjectName);
-  // const handleOnEnter = (e: any, num: number) => {
-  //   if (e.key == "Enter") {
-  //     e.stopPropagation();
-  //     e.preventDefault();
 
-  //     if (formRefs[num]) {
-  //       formRefs[num].current.blur();
-  //     }
-  //   }
-  // };
+  const displayedSubjects = (subjectId: string | undefined) => {
+    const subject: any = subjects.find((x) => x.subjectId == subjectId);
+    if (subject) {
+      return (
+        <div key={subjectId}>
+          <Form.Control
+            className="m-2"
+            placeholder="Add a key phrase"
+            defaultValue={subject.name}
+            style={{ border: 0, fontSize: 30 }}
+            onChange={(e) => handleNameChange(e, 0)}
+            onBlur={() => handleBlur(subject.subjectId, subjectNames[0])}
+          />
+          {DisplayedSubject(subject, currentUser)}
+        </div>
+      );
+    }
 
-  const displayedSubjects = () =>
-    subjects.map((subject: subject, num: number) => (
+    return subjects.map((subject: subject, num: number) => (
       <div key={subject.subjectId}>
         <Form.Control
           className="m-2"
@@ -139,12 +131,13 @@ export default function Dashboard() {
         {DisplayedSubject(subject, currentUser)}
       </div>
     ));
+  };
 
   return (
     <div className="vh-100 d-flex flex-column">
       <NavBar></NavBar>
       <Container fluid className="d-flex flex-grow-1">
-        <div className="row" >
+        <div className="row">
           <nav
             id="sidebarMenu"
             className="col-md-auto col-lg-auto d-md-block mw-10 bg-light sidebar collapse show"
@@ -178,7 +171,7 @@ export default function Dashboard() {
                       className="sidebar-item d-flex align-items-center"
                       as={Dropdown.Item}
                       variant="light"
-                      href={"subject/" + subject.subjectId}
+                      href={subject.subjectId}
                       style={{ color: "black" }}
                     >
                       <Files className="m-1"></Files>
@@ -270,14 +263,10 @@ export default function Dashboard() {
                   Add Deck
                 </Nav.Link>
               </Nav>
-              
             </div>
-            
           </nav>
-          
         </div>
-        <Container fluid>{displayedSubjects()}</Container>
-        
+        <Container fluid>{displayedSubjects(subjectId)}</Container>
       </Container>
     </div>
   );
