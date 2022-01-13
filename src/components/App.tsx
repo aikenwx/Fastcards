@@ -57,8 +57,12 @@ function App() {
               }
             />
             <Route
-              path="/subject/:subjectId"
-              element={<Subject></Subject>}
+              path="/:subjectId"
+              element={
+                <PrivateRoute>
+                  <Dashboard />
+                </PrivateRoute>
+              }
             />
           </Routes>
         </AuthProvider>
