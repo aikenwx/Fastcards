@@ -2,7 +2,7 @@ import { ImageConfig } from "./types";
 
 export const imageSizeLimit = 5;
 export const cropImageWidth = 30 ;
-export const displayImageWidth = 20;
+export const displayImageWidth = 15;
 
 export const blankImageConfig: ImageConfig = {
   imageId: "",

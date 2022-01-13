@@ -191,33 +191,38 @@ export default function FlashCard({
       setImageFile(file);
     });
   };
-  console.log(f.description);
   const handleDeleteImage = () => {
     setImageConfig({ ...blankImageConfig });
     setImageFile();
   };
   return (
-    <Container className="m-3">
-      <Card
-        className="card"
-        style={{ width: `${displayImageWidth}rem`, overflow: "hidden", minHeight: `${displayImageWidth}rem`}}
-        onClick={handleShow}
-      >
-        {f.isImageVisible &&
-          f.imageUrl &&
-          FlashcardImage({ ...f }, displayImageWidth)}
-        {(f.keyPhrase || (f.isDescriptionVisible && f.description)) && (
-          <Card.Body>
-            <Card.Title>{f.keyPhrase}</Card.Title>
-            {f.isDescriptionVisible && (
-              <Card.Text style={{ whiteSpace: "normal" }}>
-                {" "}
-                {f.description}
-              </Card.Text>
-            )}
-          </Card.Body>
-        )}
-      </Card>
+    <div className="m-3">
+      <div className="clickable-card" onClick={handleShow} style={{width: `${displayImageWidth}rem`}}>
+        <Card
+          className="card"
+          style={{
+            width: `${displayImageWidth}rem`,
+            overflow: "hidden",
+            minHeight: `${displayImageWidth}rem`,
+            zIndex: -1,
+          }}
+        >
+          {f.isImageVisible &&
+            f.imageUrl &&
+            FlashcardImage({ ...f }, displayImageWidth)}
+          {(f.keyPhrase || (f.isDescriptionVisible && f.description)) && (
+            <Card.Body>
+              <Card.Title>{f.keyPhrase}</Card.Title>
+              {f.isDescriptionVisible && (
+                <Card.Text style={{ whiteSpace: "normal" }}>
+                  {" "}
+                  {f.description}
+                </Card.Text>
+              )}
+            </Card.Body>
+          )}
+        </Card>
+      </div>
       <Modal show={show} onExited={handleClose} onShow={() => setIsSaved(true)}>
         <Modal.Header>
           <Form.Control
@@ -296,6 +301,6 @@ export default function FlashCard({
           </Button>
         </Modal.Footer>
       </Modal>
-    </Container>
+    </div>
   );
 }
