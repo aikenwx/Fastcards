@@ -9,15 +9,6 @@ export const checkValidFileSize = (file: File) => {
   return file.size < imageSizeLimit * 1024 * 1024;
 };
 
-export const setAspectRatio = (
-  src: string,
-  setAspectRatio: (num: number) => void
-) => {
-  const image = new Image();
-  image.src = src;
-  image.onload = () => setAspectRatio(image.height / image.width);
-};
-
 export const getHeightAndWidthFromDataUrl = (dataURL: string) =>
   new Promise((resolve) => {
     const img = new Image();
@@ -32,15 +23,7 @@ export const getHeightAndWidthFromDataUrl = (dataURL: string) =>
 
 export const getImageProps = (imagePropsString: string) => {
   const obj = JSON.parse(imagePropsString);
-
-  const validImageProps: ImageProps = { ...blankImageProps };
-
-  if (!(Object.keys(validImageProps).sort() === Object.keys(obj))) {
-    throw "Object is not of type alias ImageProps";
-  }
-
   const res: ImageProps = obj;
-
   return res;
 };
 

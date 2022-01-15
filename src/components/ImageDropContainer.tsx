@@ -34,6 +34,7 @@ export default function ImageDropContainer(
     imageUrl: imageUrl,
   };
 
+
   const hiddenFileInput: any = useRef(null);
   const secondHiddenFileInput: any = useRef(null);
 
