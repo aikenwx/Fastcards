@@ -32,7 +32,6 @@ export default function Dashboard() {
   const [subjects, setSubjects]: [Subject[], any] = useState([]);
   const [open, setOpen]: any = useState();
   const [currKey, setCurrKey]: any = useState();
-  const [setToggleFocus]: any = useState(-1);
   const [hover, setHover]: any = useState(false);
   // const formRefs: any = useRef([]);
 
@@ -85,19 +84,21 @@ export default function Dashboard() {
       const data = snapshot.val();
 
       if (data !== null) {
-        const subjectIds = parseOrder(data.subjectOrder);
+        const subjectIds = parseOrder(data.subjectOrderString);
         setSubjectOrder(subjectIds);
 
         const subjects = subjectIds.map((subjectId) => {
           const fetchedSubject: uploadedSubject = data.Subjects[subjectId];
 
+
           const flashcardIds = parseOrder(
-            data.Subjects[subjectId].flashcardOrder
+            data.Subjects[subjectId].flashcardOrderString
           );
 
           const flashcards = flashcardIds.map((flashcardId) => {
             const fetchedFlashcard: UploadedFlashcard =
-              data.Subjects[subjectId].flashcards[flashcardId];
+              data.Subjects[subjectId].Flashcards[flashcardId];
+
 
             const flashcard: Flashcard = {
               flashcardId: flashcardId,
@@ -109,17 +110,21 @@ export default function Dashboard() {
                 fetchedFlashcard.backImagePropsString
               ),
             };
+
             return flashcard;
           });
 
+
           const subject: Subject = {
             subjectId: subjectId,
-            ...fetchedSubject,
             flashcardOrder: flashcardIds,
             flashcards: flashcards,
+            ...fetchedSubject,
           };
           return subject;
         });
+
+
 
         setSubjects(subjects);
         setSubjectNames(subjects.map((x) => x.subjectName));
@@ -168,8 +173,8 @@ export default function Dashboard() {
         <div key={subjectId}>
           <Form.Control
             className="m-2"
-            placeholder="Add a key phrase"
-            defaultValue={subject.name}
+            placeholder="Untitled"
+            defaultValue={subject.subjectName}
             style={{ border: 0, fontSize: 30 }}
             onChange={(e) => handleNameChange(e, 0)}
             onBlur={() => handleBlur(subject.subjectId, subjectNames[0])}
@@ -225,8 +230,6 @@ export default function Dashboard() {
                   <div
                     className="d-flex align-items-center"
                     key={subject.subjectId}
-                    onMouseEnter={() => setToggleFocus(num)}
-                    onMouseLeave={() => setToggleFocus(-1)}
                   >
                     <Nav.Link
                       className="sidebar-item d-flex align-items-center"

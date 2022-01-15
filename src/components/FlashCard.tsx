@@ -88,6 +88,7 @@ export default function FlashCard({
     useState({ ...f.backImageProps });
   const [backImageFile, setBackImageFile]: any = useState();
 
+
   const textAreaRef: any = useRef();
   // reset data once modal flashcard is closed
   useEffect(
@@ -158,8 +159,8 @@ export default function FlashCard({
     setBackText(f.backText);
     setFrontImageFile();
     setBackImageFile();
-    setFrontImageKey({ imageUrl: f.frontImageUrl, imageId: f.frontImageUrl });
-    setBackImageKey({ imageUrl: f.backImageUrl, imageId: f.backImageUrl });
+    setFrontImageKey({ imageUrl: f.frontImageUrl, imageId: f.frontImageId });
+    setBackImageKey({ imageUrl: f.backImageUrl, imageId: f.backImageId });
     setFrontImageProps({ ...f.frontImageProps });
     setBackImageProps({ ...f.backImageProps });
     setShowFrontCropper(false);
@@ -197,6 +198,7 @@ export default function FlashCard({
     }
     // original and updated frontImageIds are not the same
     else if (f.frontImageId !== updatedFlashcard.frontImageId) {
+
       uploadFrontImageAndUpdateFlashcard(
         currentUser.uid,
         subjectId,
@@ -204,7 +206,7 @@ export default function FlashCard({
         f,
         updatedFlashcard
       );
-      if (f.frontImageId !== updatedFlashcard.frontImageId) {
+      if (f.backImageId !== updatedFlashcard.backImageId) {
         uploadBackImageAndUpdateFlashcard(
           currentUser.uid,
           subjectId,
@@ -216,7 +218,7 @@ export default function FlashCard({
 
       setIsSaved(true);
       return;
-    } else if (f.frontImageId !== updatedFlashcard.frontImageId) {
+    } else if (f.backImageId !== updatedFlashcard.backImageId) {
       uploadBackImageAndUpdateFlashcard(
         currentUser.uid,
         subjectId,

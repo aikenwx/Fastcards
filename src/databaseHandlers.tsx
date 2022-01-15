@@ -1,5 +1,6 @@
 import { push, ref, remove, update } from "firebase/database";
 import { db } from "./firebase";
+import { blankImageProps } from "./globalVariables";
 import { stringifyImageProps, stringifyOrder } from "./helperFunctions";
 import { deleteObjects } from "./storageHandlers";
 import { Flashcard, Subject } from "./types";
@@ -42,12 +43,12 @@ export const blankUploadedFlashcard: UploadedFlashcard = {
   frontText: "",
   frontImageId: "",
   frontImageUrl: "",
-  frontImagePropsString: "",
+  frontImagePropsString: stringifyImageProps(blankImageProps),
 
   backText: "",
   backImageId: "",
   backImageUrl: "",
-  backImagePropsString: "",
+  backImagePropsString: stringifyImageProps(blankImageProps),
 
   isFlipped: false,
   dateCreated: Date.now(),
@@ -82,7 +83,9 @@ export const deleteSubject = (
   subject: Subject,
   subjectOrder: string[]
 ) => {
-  subjectOrder.filter((x) => x != subject.subjectId);
+  const updatedSubjectOrder = subjectOrder.filter(
+    (x) => x != subject.subjectId
+  );
 
   const imageIds: string[] = [];
 
@@ -92,7 +95,7 @@ export const deleteSubject = (
   });
 
   update(ref(db, "Users/" + uid), {
-    subjectOrderString: stringifyOrder(subjectOrder),
+    subjectOrderString: stringifyOrder(updatedSubjectOrder),
   });
 
   remove(ref(db, "Users/" + uid + "/Subjects/" + subject.subjectId)).then(() =>
@@ -105,7 +108,9 @@ export const renameSubject = (
   subjectId: string,
   newName: string
 ) => {
-  update(ref(db, "Users/" + uid + "/Subjects/" + subjectId), { subjectName: newName });
+  update(ref(db, "Users/" + uid + "/Subjects/" + subjectId), {
+    subjectName: newName,
+  });
 };
 
 export const createNewFlashcard = (
@@ -127,7 +132,7 @@ export const createNewFlashcard = (
     updatedOrder.push(flashcardId);
   }
 
-  update(ref(db, "Users/" + uid + "/Subjects" + subject.subjectId), {
+  update(ref(db, "Users/" + uid + "/Subjects/" + subject.subjectId), {
     flashcardOrderString: stringifyOrder(updatedOrder),
   });
 };
@@ -140,6 +145,9 @@ export const deleteFlashcard = (
   let updatedOrder: string[] = [...subject.flashcardOrder];
   updatedOrder = updatedOrder.filter((x) => x != flashcardId);
 
+  update(ref(db, "Users/" + uid + "/Subjects/" + subject.subjectId), {
+      flashcardOrderString: stringifyOrder(updatedOrder),
+    })
   remove(
     ref(
       db,
@@ -150,11 +158,7 @@ export const deleteFlashcard = (
         "/Flashcards/" +
         flashcardId
     )
-  ).then(() =>
-    update(ref(db, "Users/" + uid + "/Subjects" + subject.subjectId), {
-      flashcardOrderString: stringifyOrder(updatedOrder),
-    })
-  );
+  )
 };
 
 export const editFlashcard = (
