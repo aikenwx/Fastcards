@@ -10,11 +10,13 @@ import "../styles/imageDropBox.scss";
 import { Upload } from "react-bootstrap-icons";
 import Cropper from "react-easy-crop";
 import FlashcardImage from "./FlashcardImage";
-import { ImageConfig, Crop } from "../types";
+import { ImageConfig, Crop, ImageProps } from "../types";
 import { cropImageWidth } from "../globalVariables";
 
 export default function ImageDropContainer(
-  imageConfig: ImageConfig,
+  imageProps: ImageProps,
+  imageId: string,
+  imageUrl: string,
   crop: Crop,
   scale: number,
   rotation: number,
@@ -26,6 +28,12 @@ export default function ImageDropContainer(
   handleImageChange: (e: any) => void,
   handleDeleteImage: () => void
 ) {
+  const imageConfig = {
+    ...imageProps,
+    imageId: imageId,
+    imageUrl: imageUrl,
+  };
+
   const hiddenFileInput: any = useRef(null);
   const secondHiddenFileInput: any = useRef(null);
 
@@ -88,7 +96,7 @@ export default function ImageDropContainer(
               delay={{ show: 400, hide: 400 }}
               overlay={renderClickHint}
             >
-              {FlashcardImage(imageConfig, cropImageWidth)}
+              {FlashcardImage(imageProps, imageId, imageUrl, cropImageWidth)}
             </OverlayTrigger>
           </div>
         )}

@@ -1,73 +1,99 @@
 import { push, ref, remove, update } from "firebase/database";
 import { db } from "./firebase";
-import { blankImageConfig } from "./globalVariables";
+import { stringifyImageProps, stringifyOrder } from "./helperFunctions";
 import { deleteObjects } from "./storageHandlers";
-import { Flashcard } from "./types";
-
-export const addSubject = (uid: string, subjectName: string) => {
-  push(ref(db, "Users/" + uid + "/Subjects"), {
-    name: subjectName,
-  });
-};
+import { Flashcard, Subject } from "./types";
 
 export type UploadedFlashcard = {
-  keyPhrase: string;
-  imageId: string;
-  imageUrl: string;
-  description: string;
-  imageHeight: number;
-  imageWidth: number;
-  translateY: number;
-  translateX: number;
-  rotation: number;
-  scale: number;
-  isDescriptionVisible: boolean;
-  isImageVisible: boolean;
+  flashcardName: string;
+
+  frontText: string;
+  frontImageId: string;
+  frontImageUrl: string;
+  frontImagePropsString: string;
+
+  backText: string;
+  backImageId: string;
+  backImageUrl: string;
+  backImagePropsString: string;
+
   isFlipped: boolean;
+  dateCreated: number;
+  dateLastTested: number;
+
+  testRecord: string;
+};
+
+export type uploadedSubject = {
+  subjectName: string;
+  sortedBy: string;
+  flashcardOrderString: string;
+};
+
+export const blankUploadedSubject: uploadedSubject = {
+  subjectName: "",
+  sortedBy: "",
+  flashcardOrderString: stringifyOrder([]),
 };
 
 export const blankUploadedFlashcard: UploadedFlashcard = {
-  keyPhrase: "",
-  description: "",
-  isDescriptionVisible: false,
-  isImageVisible: false,
+  flashcardName: "",
+
+  frontText: "",
+  frontImageId: "",
+  frontImageUrl: "",
+  frontImagePropsString: "",
+
+  backText: "",
+  backImageId: "",
+  backImageUrl: "",
+  backImagePropsString: "",
+
   isFlipped: false,
-  ...blankImageConfig,
+  dateCreated: Date.now(),
+  dateLastTested: Date.now(),
+  testRecord: "",
 };
 
-export const createNewFlashcard = (
+export const addSubject = (
   uid: string,
-  subjectId: string,
-  keyPhrase: string
+  subjectName: string,
+  subjectOrder: string[]
 ) => {
-  const newFlashcard: UploadedFlashcard = { ...blankUploadedFlashcard };
-  newFlashcard.keyPhrase = keyPhrase;
+  const uploadedSubject: uploadedSubject = { ...blankUploadedSubject };
+  uploadedSubject.subjectName = subjectName;
 
-  push(
-    ref(db, "Users/" + uid + "/Subjects/" + subjectId + "/Flashcards"),
-    newFlashcard
-  );
+  const subjectId = push(
+    ref(db, "Users/" + uid + "/Subjects"),
+    uploadedSubject
+  ).key;
+
+  if (subjectId) {
+    subjectOrder.push(subjectId);
+  }
+
+  update(ref(db, "Users/" + uid), {
+    subjectOrderString: stringifyOrder(subjectOrder),
+  });
 };
 
-export const deleteFlashcard = (
+export const deleteSubject = (
   uid: string,
-  subjectId: string,
-  flashcardId: string
+  subject: Subject,
+  subjectOrder: string[]
 ) => {
-  remove(
-    ref(
-      db,
-      "Users/" + uid + "/Subjects/" + subjectId + "/Flashcards/" + flashcardId
-    )
-  );
-};
+  subjectOrder.filter((x) => x != subject.subjectId);
 
-export const deleteSubject = (uid: string, subject: any) => {
   const imageIds: string[] = [];
 
-  for (const flashcard in subject.Flashcards) {
-    imageIds.push(subject.Flashcards[flashcard].imageId);
-  }
+  subject.flashcards.map((f) => {
+    imageIds.push(f.frontImageId);
+    imageIds.push(f.backImageId);
+  });
+
+  update(ref(db, "Users/" + uid), {
+    subjectOrderString: stringifyOrder(subjectOrder),
+  });
 
   remove(ref(db, "Users/" + uid + "/Subjects/" + subject.subjectId)).then(() =>
     deleteObjects("images/", imageIds)
@@ -79,7 +105,56 @@ export const renameSubject = (
   subjectId: string,
   newName: string
 ) => {
-  update(ref(db, "Users/" + uid + "/Subjects/" + subjectId), { name: newName });
+  update(ref(db, "Users/" + uid + "/Subjects/" + subjectId), { subjectName: newName });
+};
+
+export const createNewFlashcard = (
+  uid: string,
+  subject: Subject,
+  flashcardName: string
+) => {
+  let updatedOrder: string[] = [...subject.flashcardOrder];
+
+  const newFlashcard: UploadedFlashcard = { ...blankUploadedFlashcard };
+  newFlashcard.flashcardName = flashcardName;
+
+  const flashcardId = push(
+    ref(db, "Users/" + uid + "/Subjects/" + subject.subjectId + "/Flashcards"),
+    newFlashcard
+  ).key;
+
+  if (flashcardId) {
+    updatedOrder.push(flashcardId);
+  }
+
+  update(ref(db, "Users/" + uid + "/Subjects" + subject.subjectId), {
+    flashcardOrderString: stringifyOrder(updatedOrder),
+  });
+};
+
+export const deleteFlashcard = (
+  uid: string,
+  subject: Subject,
+  flashcardId: string
+) => {
+  let updatedOrder: string[] = [...subject.flashcardOrder];
+  updatedOrder = updatedOrder.filter((x) => x != flashcardId);
+
+  remove(
+    ref(
+      db,
+      "Users/" +
+        uid +
+        "/Subjects/" +
+        subject.subjectId +
+        "/Flashcards/" +
+        flashcardId
+    )
+  ).then(() =>
+    update(ref(db, "Users/" + uid + "/Subjects" + subject.subjectId), {
+      flashcardOrderString: stringifyOrder(updatedOrder),
+    })
+  );
 };
 
 export const editFlashcard = (
@@ -87,21 +162,14 @@ export const editFlashcard = (
   subjectId: string,
   flashcard: Flashcard
 ) => {
-  const uploadedCard: {
-    keyPhrase: string;
-    imageId: string;
-    imageUrl: string;
-    imageHeight: number;
-    imageWidth: number;
-    translateY: number;
-    translateX: number;
-    rotation: number;
-    scale: number;
-    description: string;
-    isDescriptionVisible: boolean;
-    isImageVisible: boolean;
-    isFlipped: boolean;
-  } = { ...flashcard };
+  const frontImagePropsString = stringifyImageProps(flashcard.frontImageProps);
+  const backImagePropsString = stringifyImageProps(flashcard.backImageProps);
+
+  const uploadedCard: UploadedFlashcard = {
+    ...flashcard,
+    frontImagePropsString: frontImagePropsString,
+    backImagePropsString: backImagePropsString,
+  };
 
   update(
     ref(
