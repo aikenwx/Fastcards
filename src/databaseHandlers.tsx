@@ -1,8 +1,8 @@
-import { db } from "./firebase";
 import { push, ref, remove, update } from "firebase/database";
-import { flashcard } from "./types";
-import { deleteObjects } from "./storageHandlers";
+import { db } from "./firebase";
 import { blankImageConfig } from "./globalVariables";
+import { deleteObjects } from "./storageHandlers";
+import { Flashcard } from "./types";
 
 export const addSubject = (uid: string, subjectName: string) => {
   push(ref(db, "Users/" + uid + "/Subjects"), {
@@ -34,26 +34,6 @@ export const blankUploadedFlashcard: UploadedFlashcard = {
   isFlipped: false,
   ...blankImageConfig,
 };
-
-// export const addFlashcard = (
-//   uid: string,
-//   subjectId: string,
-//   keyPhrase: string,
-//   imageId: string,
-//   imageUrl: string,
-//   description: string,
-//   isDescriptionVisible: boolean,
-//   isImageVisible: boolean
-// ) => {
-//   push(ref(db, "Users/" + uid + "/Subjects/" + subjectId + "/Flashcards"), {
-//     keyPhrase: keyPhrase,
-//     imageId: imageId,
-//     imageUrl: imageUrl,
-//     description: description,
-//     isDescriptionVisible: isDescriptionVisible,
-//     isImageVisible: isImageVisible,
-//   });
-// };
 
 export const createNewFlashcard = (
   uid: string,
@@ -105,7 +85,7 @@ export const renameSubject = (
 export const editFlashcard = (
   uid: string,
   subjectId: string,
-  flashcard: flashcard
+  flashcard: Flashcard
 ) => {
   const uploadedCard: {
     keyPhrase: string;
@@ -136,35 +116,3 @@ export const editFlashcard = (
     uploadedCard
   );
 };
-// export const updateFlashcard = (
-//   uid: string,
-//   subjectId:string,
-//   flashcardId: string,
-//   keyPhrase?: string,
-//   image?: string,
-//   description?: string,
-//   isDescriptionVisible?: string,
-//   isImageVisible?: string
-// ) => {
-
-//   const updatedParameters = {
-//     flashcardId: flashcardId
-//   }
-
-//   if (keyPhrase) {
-//     flashcardId + {keyPhrase: keyPhrase}
-//   }
-
-//   update(
-//     ref(
-//       db,
-//       "Users/"+ uid + "/Subjects/" + subjectId + "/Flashcards/" + flashcardId
-//       ), {
-//         keyPhrase: keyPhrase,
-//         image: image,
-//         description: description,
-//         isDescriptionVisible: isDescriptionVisible,
-//         isImageVisible: isImageVisible
-//       }
-//   )
-// }

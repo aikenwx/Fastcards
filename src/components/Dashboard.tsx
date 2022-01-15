@@ -2,7 +2,11 @@ import { onValue, ref } from "firebase/database";
 import React, { useEffect, useState } from "react";
 import {
   ButtonGroup,
-  Container, Dropdown, Form, Nav, Spinner
+  Container,
+  Dropdown,
+  Form,
+  Nav,
+  Spinner
 } from "react-bootstrap";
 import { Files, House, Plus, ThreeDots } from "react-bootstrap-icons";
 import { useParams } from "react-router-dom";
@@ -11,17 +15,17 @@ import { addSubject, deleteSubject, renameSubject } from "../databaseHandlers";
 import { db } from "../firebase";
 import { cropImageWidth } from "../globalVariables";
 import "../styles/dashboard.scss";
-import { flashcard, subject } from "../types";
+import { Flashcard, Subject } from "../types";
 import DisplayedSubject from "./DisplayedSubject";
 import NavBar from "./NavBar";
 
 export default function Dashboard() {
   const { currentUser } = useAuth();
   const [loading, setLoading] = useState(true);
-  const [subjects, setSubjects]: [subject[], any] = useState([]);
+  const [subjects, setSubjects]: [Subject[], any] = useState([]);
   const [open, setOpen]: any = useState();
   const [currKey, setCurrKey]: any = useState();
-  const [toggleFocus, setToggleFocus]: any = useState(-1);
+  const [ setToggleFocus]: any = useState(-1);
   const [hover, setHover]: any = useState(false);
   // const formRefs: any = useRef([]);
   const [subjectNames, setSubjectNames]: [string[], any] = useState([]);
@@ -41,10 +45,10 @@ export default function Dashboard() {
         let arr: any[] = [];
         snapshot.forEach((data) => {
           data.forEach((x) => {
-            const flashcards: flashcard[] = [];
+            const flashcards: Flashcard[] = [];
 
             for (const flashcardId in x.val().Flashcards) {
-              const flashcard: flashcard = {
+              const flashcard: Flashcard = {
                 flashcardId: flashcardId,
                 ...x.val().Flashcards[flashcardId],
               };
@@ -105,6 +109,7 @@ export default function Dashboard() {
     if (subject) {
       return (
         <div key={subjectId}>
+     
           <Form.Control
             className="m-2"
             placeholder="Add a key phrase"
@@ -118,7 +123,7 @@ export default function Dashboard() {
       );
     }
 
-    return subjects.map((subject: subject, num: number) => (
+    return subjects.map((subject: Subject, num: number) => (
       <div key={subject.subjectId}>
         <Form.Control
           className="m-2"
@@ -150,7 +155,7 @@ export default function Dashboard() {
                 <Nav.Link
                   className="sidebar-item d-flex align-items-center"
                   as={Dropdown.Item}
-                  style={{ color: "black" }}
+                  style={{ color: "black", width: "18rem" }}
                   href="/"
                 >
                   <House className="m-1"></House>
@@ -172,11 +177,20 @@ export default function Dashboard() {
                       as={Dropdown.Item}
                       variant="light"
                       href={subject.subjectId}
-                      style={{ color: "black" }}
+                      style={{
+                        color: "black",
+                      }}
                     >
                       <Files className="m-1"></Files>
-
-                      {subject.name}
+                      <div
+                        style={{
+                          maxWidth: "13rem",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                        }}
+                      >
+                        {subject.name}
+                      </div>
                     </Nav.Link>
                     <div style={{ position: "absolute", right: 0 }}>
                       <Dropdown
@@ -199,12 +213,7 @@ export default function Dashboard() {
                           as={ThreeDots}
                           className="m-2 custom-toggle"
                           style={{
-                            color:
-                              num != toggleFocus && currKey != subject.subjectId
-                                ? "transparent"
-                                : !hover
-                                ? "gray"
-                                : "black",
+                            color: !hover ? "gray" : "black",
                           }}
                         ></Dropdown.Toggle>
                         <Dropdown.Menu>

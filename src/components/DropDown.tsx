@@ -1,7 +1,7 @@
 import React from "react";
 import { Button, Dropdown, OverlayTrigger, Popover } from "react-bootstrap";
 import { ThreeDots } from "react-bootstrap-icons";
-import "../styles/dropdown.scss"
+import "../styles/dropdown.scss";
 
 export default function DropDown({
   children,

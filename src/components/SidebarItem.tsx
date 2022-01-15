@@ -1,23 +1,19 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { Dropdown, Nav } from "react-bootstrap";
 import { Files } from "react-bootstrap-icons";
-import DropDown from "./DropDown";
-import { subject } from "../types";
-import { deleteSubject, renameSubject } from "../databaseHandlers";
 import { useAuth } from "../contexts/AuthContext";
+import { deleteSubject } from "../databaseHandlers";
+import { Subject } from "../types";
+import DropDown from "./DropDown";
 
 export default function SidebarItem(
-  subject: subject,
+  subject: Subject,
   toggle: boolean,
   setToggle: React.Dispatch<React.SetStateAction<boolean>>
 ) {
   const { currentUser } = useAuth();
 
   const handleDelete = () => deleteSubject(currentUser.uid, subject);
-
-  // const [open, setOpen] = useState(false);
-
-  //useEffect(() => setOpen(false), [toggle]);
 
   return (
     <div className="d-flex align-items-center">

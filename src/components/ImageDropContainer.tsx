@@ -6,7 +6,7 @@ import {
   OverlayTrigger,
   Tooltip,
 } from "react-bootstrap";
-import "../styles/imageDropBox.css";
+import "../styles/imageDropBox.scss";
 import { Upload } from "react-bootstrap-icons";
 import Cropper from "react-easy-crop";
 import FlashcardImage from "./FlashcardImage";

@@ -1,17 +1,14 @@
-import React, { useRef, useState } from "react";
-import { createNewFlashcard, renameSubject } from "../databaseHandlers";
-import FlashCard from "./FlashCard";
-import { Button, Container, Card, Form } from "react-bootstrap";
-import { displayImageWidth } from "../globalVariables";
+import React from "react";
+import { Button } from "react-bootstrap";
 import { Plus } from "react-bootstrap-icons";
-import { subject } from "../types";
+import { createNewFlashcard } from "../databaseHandlers";
+import { displayImageWidth } from "../globalVariables";
+import { Subject } from "../types";
+import FlashCard from "./FlashCard";
 
-export default function DisplayedSubject(subject: subject, currentUser: any) {
+export default function DisplayedSubject(subject: Subject, currentUser: any) {
   const subjectId = subject.subjectId;
   const cards = subject.flashcards;
-  // const [subjectName, setSubjectName] = useState(subject.name);
-
-  // const formRef: any = useRef();
 
   const handleAdd = () => {
     try {
@@ -21,19 +18,6 @@ export default function DisplayedSubject(subject: subject, currentUser: any) {
     }
   };
 
-  // const handleNameChange = (e:any) => setSubjectName(e.target.value);
-  // const handleBlur = () =>
-  //   renameSubject(currentUser.uid, subjectId, subjectName);
-  // const handleOnEnter = (e: any) => {
-  //   if (e.key == "Enter") {
-  //     e.stopPropagation();
-  //     e.preventDefault();
-
-  //     if (formRef) {
-  //       formRef.current.blur();
-  //     }
-  //   }
-  // };
 
   return (
     <div>
@@ -57,7 +41,6 @@ export default function DisplayedSubject(subject: subject, currentUser: any) {
             }}
           >
             <Plus size="30" style={{ margin: "0 0 0 0" }}></Plus>
-           
           </Button>
         </div>
       </div>
