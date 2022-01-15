@@ -1,32 +1,24 @@
+import { onValue, ref } from "firebase/database";
 import React, { useEffect, useState } from "react";
+import {
+  Button, Card, Container
+} from "react-bootstrap";
+import { Plus } from "react-bootstrap-icons";
 import { useParams } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
-import { db } from "../firebase";
-import { flashcard } from "../types";
-import { onValue, ref } from "firebase/database";
-import NavBar from "./NavBar";
 import {
-  createNewFlashcard,
-  deleteFlashcard,
-  editFlashcard,
+  createNewFlashcard
 } from "../databaseHandlers";
-import FlashCard from "./FlashCard";
-import {
-  Button,
-  Container,
-  Card,
-  Popover,
-  OverlayTrigger,
-  Dropdown,
-} from "react-bootstrap";
+import { db } from "../firebase";
 import { displayImageWidth } from "../globalVariables";
-import { Plus } from "react-bootstrap-icons";
-import DropDown from "./DropDown";
+import { Flashcard } from "../types";
+import FlashCard from "./FlashCard";
+import NavBar from "./NavBar";
 
 export default function Subject() {
   const params = useParams();
   const { currentUser } = useAuth();
-  const [cards, setCards]: [flashcard[], any] = useState([]);
+  const [cards, setCards]: [Flashcard[], any] = useState([]);
   const subjectId = params.subjectId || "";
 
   const handleAdd = () => {

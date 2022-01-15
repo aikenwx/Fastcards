@@ -5,23 +5,17 @@ import {
   uploadBytes,
 } from "firebase/storage";
 import { storage } from "./firebase";
-import { flashcard } from "./types";
+import { Flashcard } from "./types";
 import { editFlashcard } from "./databaseHandlers";
 import { imageSizeLimit } from "./globalVariables";
 import { checkFileIsImage, checkValidFileSize } from "./helperFunctions";
-
-
-const uuid = require("uuid");
-const uuidv4 = uuid.v4;
-
-
 
 export const uploadImageAndUpdateFlashcard = (
   uid: string,
   subjectId: string,
   file: File,
-  originalFlashcard: flashcard,
-  updatedFlashcard: flashcard,
+  originalFlashcard: Flashcard,
+  updatedFlashcard: Flashcard
 ) => {
   if (!checkFileIsImage(file)) {
     throw "File is not an image";
@@ -32,8 +26,6 @@ export const uploadImageAndUpdateFlashcard = (
     if (originalFlashcard.imageId) {
       deleteObject(ref(storage, "images/" + originalFlashcard.imageId));
     }
-    // move to front end
-    // const imageId = uuidv4();
     const storageRef = ref(storage, "images/" + updatedFlashcard.imageId);
     uploadBytes(storageRef, file).then(() =>
       getDownloadURL(storageRef).then((url) => {
@@ -44,20 +36,16 @@ export const uploadImageAndUpdateFlashcard = (
   }
 };
 
-export const deleteImage = (
-  originalFlashcard: flashcard
-) => {
+export const deleteImage = (originalFlashcard: Flashcard) => {
   deleteObject(ref(storage, "images/" + originalFlashcard.imageId));
 };
 
 export const deleteObjects = (path: string, objects: string[]) => {
   if (objects.length == 0) {
-    return
+    return;
   }
 
-  const currPath = path + objects.pop()
+  const currPath = path + objects.pop();
 
-  deleteObject(ref(storage, currPath)).then(
-    () => deleteObjects(path, objects)    
-  )
+  deleteObject(ref(storage, currPath)).then(() => deleteObjects(path, objects));
 };

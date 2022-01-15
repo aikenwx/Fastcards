@@ -2,7 +2,7 @@ import React, { useRef, useState, useEffect, useLayoutEffect } from "react";
 import { editFlashcard, deleteFlashcard } from "../databaseHandlers";
 import {
   Crop,
-  flashcard,
+  Flashcard,
   ImageKey,
   ImageConfig,
   ImageDimensions,
@@ -35,7 +35,7 @@ export default function FlashCard({
   f,
   subjectId,
 }: {
-  f: flashcard;
+  f: Flashcard;
   subjectId: string;
 }) {
   const uuid = require("uuid");
@@ -111,7 +111,7 @@ export default function FlashCard({
     setShowCropper(false);
   };
   const handleSave = () => {
-    const updatedFlashcard: flashcard = {
+    const updatedFlashcard: Flashcard = {
       ...f,
       ...imageConfig,
     };
@@ -147,7 +147,7 @@ export default function FlashCard({
   const handleShow = () => setShow(true);
 
   const handleToggleDescription = () => {
-    const updatedFlashcard: flashcard = {
+    const updatedFlashcard: Flashcard = {
       ...f,
     };
     updatedFlashcard.isDescriptionVisible =
@@ -156,7 +156,7 @@ export default function FlashCard({
   };
 
   const handleToggleImage = () => {
-    const updatedFlashcard: flashcard = {
+    const updatedFlashcard: Flashcard = {
       ...f,
     };
     updatedFlashcard.isImageVisible = !updatedFlashcard.isImageVisible;
