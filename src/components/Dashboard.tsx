@@ -6,14 +6,21 @@ import {
   Dropdown,
   Form,
   Nav,
-  Spinner
+  Spinner,
 } from "react-bootstrap";
 import { Files, House, Plus, ThreeDots } from "react-bootstrap-icons";
 import { useParams } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
-import { addSubject, deleteSubject, renameSubject } from "../databaseHandlers";
+import {
+  addSubject,
+  deleteSubject,
+  renameSubject,
+  UploadedFlashcard,
+  uploadedSubject,
+} from "../databaseHandlers";
 import { db } from "../firebase";
 import { cropImageWidth } from "../globalVariables";
+import { getImageProps, parseOrder, stringifyOrder } from "../helperFunctions";
 import "../styles/dashboard.scss";
 import { Flashcard, Subject } from "../types";
 import DisplayedSubject from "./DisplayedSubject";
@@ -25,9 +32,11 @@ export default function Dashboard() {
   const [subjects, setSubjects]: [Subject[], any] = useState([]);
   const [open, setOpen]: any = useState();
   const [currKey, setCurrKey]: any = useState();
-  const [ setToggleFocus]: any = useState(-1);
+  const [setToggleFocus]: any = useState(-1);
   const [hover, setHover]: any = useState(false);
   // const formRefs: any = useRef([]);
+
+  const [subjectOrder, setSubjectOrder]: [string[], any] = useState([]);
   const [subjectNames, setSubjectNames]: [string[], any] = useState([]);
   const params = useParams();
   const [subjectId, setSubjectId]: any = useState();
@@ -38,34 +47,82 @@ export default function Dashboard() {
     setSubjectId(params.subjectId);
   }, []);
 
+  // useEffect(() => {
+  //   onValue(ref(db, "Users/" + currentUser.uid), (snapshot) => {
+  //     const data = snapshot.val();
+  //     if (data !== null) {
+  //       let arr: any[] = [];
+  //       snapshot.forEach((data) => {
+  //         data.forEach((x) => {
+  //           const flashcards: Flashcard[] = [];
+
+  //           for (const flashcardId in x.val().Flashcards) {
+  //             const flashcard: Flashcard = {
+  //               flashcardId: flashcardId,
+  //               ...x.val().Flashcards[flashcardId],
+  //             };
+
+  //             flashcards.push(flashcard);
+  //           }
+  //           let item = {
+  //             subjectId: x.key,
+  //             flashcards: flashcards,
+  //             name: x.val().name,
+  //           };
+  //           arr.push(item);
+  //         });
+  //       });
+
+  //       setSubjects(arr);
+  //       setSubjectNames(arr.map((x) => x.name));
+  //     } else setSubjects([]);
+  //   });
+  //   setLoading(false);
+  // }, []);
+
   useEffect(() => {
     onValue(ref(db, "Users/" + currentUser.uid), (snapshot) => {
       const data = snapshot.val();
+
       if (data !== null) {
-        let arr: any[] = [];
-        snapshot.forEach((data) => {
-          data.forEach((x) => {
-            const flashcards: Flashcard[] = [];
+        const subjectIds = parseOrder(data.subjectOrder);
+        setSubjectOrder(subjectIds);
 
-            for (const flashcardId in x.val().Flashcards) {
-              const flashcard: Flashcard = {
-                flashcardId: flashcardId,
-                ...x.val().Flashcards[flashcardId],
-              };
+        const subjects = subjectIds.map((subjectId) => {
+          const fetchedSubject: uploadedSubject = data.Subjects[subjectId];
 
-              flashcards.push(flashcard);
-            }
-            let item = {
-              subjectId: x.key,
-              flashcards: flashcards,
-              name: x.val().name,
+          const flashcardIds = parseOrder(
+            data.Subjects[subjectId].flashcardOrder
+          );
+
+          const flashcards = flashcardIds.map((flashcardId) => {
+            const fetchedFlashcard: UploadedFlashcard =
+              data.Subjects[subjectId].flashcards[flashcardId];
+
+            const flashcard: Flashcard = {
+              flashcardId: flashcardId,
+              ...fetchedFlashcard,
+              frontImageProps: getImageProps(
+                fetchedFlashcard.frontImagePropsString
+              ),
+              backImageProps: getImageProps(
+                fetchedFlashcard.backImagePropsString
+              ),
             };
-            arr.push(item);
+            return flashcard;
           });
+
+          const subject: Subject = {
+            subjectId: subjectId,
+            ...fetchedSubject,
+            flashcardOrder: flashcardIds,
+            flashcards: flashcards,
+          };
+          return subject;
         });
 
-        setSubjects(arr);
-        setSubjectNames(arr.map((x) => x.name));
+        setSubjects(subjects);
+        setSubjectNames(subjects.map((x) => x.subjectName));
       } else setSubjects([]);
     });
     setLoading(false);
@@ -92,7 +149,7 @@ export default function Dashboard() {
   }
 
   function handleSubmit() {
-    addSubject(currentUser.uid, "New Deck");
+    addSubject(currentUser.uid, "New Deck", subjectOrder);
   }
 
   const handleNameChange = (e: any, num: number) => {
@@ -109,7 +166,6 @@ export default function Dashboard() {
     if (subject) {
       return (
         <div key={subjectId}>
-     
           <Form.Control
             className="m-2"
             placeholder="Add a key phrase"
@@ -128,7 +184,7 @@ export default function Dashboard() {
         <Form.Control
           className="m-2"
           placeholder="Add a key phrase"
-          defaultValue={subject.name}
+          defaultValue={subject.subjectName}
           style={{ border: 0, fontSize: 30 }}
           onChange={(e) => handleNameChange(e, num)}
           onBlur={() => handleBlur(subject.subjectId, subjectNames[num])}
@@ -189,7 +245,7 @@ export default function Dashboard() {
                           textOverflow: "ellipsis",
                         }}
                       >
-                        {subject.name}
+                        {subject.subjectName}
                       </div>
                     </Nav.Link>
                     <div style={{ position: "absolute", right: 0 }}>
@@ -226,7 +282,7 @@ export default function Dashboard() {
                             >
                               <Form.Label>Rename Subject</Form.Label>
                               <Form.Control
-                                defaultValue={subject.name}
+                                defaultValue={subject.subjectName}
                                 onClick={(e) => {
                                   e.preventDefault();
                                   e.stopPropagation();
@@ -252,7 +308,11 @@ export default function Dashboard() {
                           <Dropdown.Item
                             href="#/action-2"
                             onClick={() =>
-                              deleteSubject(currentUser.uid, subject)
+                              deleteSubject(
+                                currentUser.uid,
+                                subject,
+                                subjectOrder
+                              )
                             }
                           >
                             Delete Subject

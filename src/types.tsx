@@ -1,4 +1,4 @@
-export type Flashcard = {
+export type OldFlashcard = {
   flashcardId: string;
   keyPhrase: string;
   imageId: string;
@@ -15,47 +15,32 @@ export type Flashcard = {
   isFlipped: boolean;
 };
 
-export type NewFlashcard = {
-  flashcardName: string
+export type Flashcard = {
   flashcardId: string;
-  keyPhrase: string;
-  frontImage: Image;
-  backImage: Image;
-  frontText: string;
-  backText: string;
-  statData: StatData
-  tags: Tag[];
-  isFlipped: boolean;
-  order: number
-};
+  flashcardName: string;
 
+  frontText: string;
+  frontImageId: string;
+  frontImageUrl: string;
+  frontImageProps: ImageProps;
+
+  backText: string;
+  backImageId: string;
+  backImageUrl: string;
+  backImageProps: ImageProps;
+
+  isFlipped: boolean;
+  dateCreated: number;
+  dateLastTested: number;
+  testRecord: string;
+};
 
 export type Tag = {
   tagId: string;
   tagColor: string;
-}
+};
 
-
-export type StatData= {
-  lastHundredTestScores: number[];
-  dateCreation: Date;  
-  dateLastTested: Date;
-}
-
-
-
-
-export type NewSubject = {
-  subjectId: string;
-  subjectName: string;
-  flashcards: Flashcard[];
-}
-
-
-
-export type Image = {
-  imageId: string;
-  imageUrl: string;
+export type ImageProps = {
   imageHeight: number;
   imageWidth: number;
   translateY: number;
@@ -64,16 +49,18 @@ export type Image = {
   scale: number;
 };
 
-
 export type Subject = {
   subjectId: string;
-  name: string;
+  subjectName: string;
   flashcards: Flashcard[];
+  sortedBy: string;
+  flashcardOrder: string[];
 };
 
 export type user = {
   userId: string;
   subjects: Subject[];
+  subjectOrder: string[];
 };
 
 export type ImageConfig = {

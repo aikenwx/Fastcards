@@ -12,7 +12,7 @@ export default function DisplayedSubject(subject: Subject, currentUser: any) {
 
   const handleAdd = () => {
     try {
-      createNewFlashcard(currentUser.uid, subjectId || "", "Untitled");
+      createNewFlashcard(currentUser.uid, subject, "Untitled");
     } catch (error: any) {
       console.log(error.message);
     }
@@ -24,7 +24,7 @@ export default function DisplayedSubject(subject: Subject, currentUser: any) {
       <div className="d-flex justify-content-start flex-wrap">
         {cards.map((card) => (
           <FlashCard
-            subjectId={subjectId}
+            subject={subject}
             f={card}
             key={card.flashcardId}
           ></FlashCard>

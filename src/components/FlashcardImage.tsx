@@ -1,10 +1,18 @@
 import { cropImageWidth } from "../globalVariables";
-import { ImageConfig } from "../types";
+import { ImageProps } from "../types";
 
 export default function FlashcardImage(
-  imageConfig: ImageConfig,
+  imageProps: ImageProps,
+  imageId: string,
+  imageUrl: string,
   imageWidth: number
 ) {
+  const imageConfig = {
+    ...imageProps,
+    imageId: imageId,
+    imageUrl: imageUrl,
+  };
+
   return imageConfig.imageHeight <= imageConfig.imageWidth ? (
     <div
       className="d-flex flex-column justify-content-center align-items-center flashcard-image"
