@@ -7,17 +7,19 @@ import { Subject } from "../types";
 import FlashCard from "./FlashCard";
 
 export default function DisplayedSubject(subject: Subject, currentUser: any) {
-  const subjectId = subject.subjectId;
   const cards = subject.flashcards;
 
   const handleAdd = () => {
     try {
-      createNewFlashcard(currentUser.uid, subject, "Untitled");
+      createNewFlashcard(
+        currentUser.uid,
+        subject,
+        subject.subjectName + " " + (subject.flashcards.length + 1).toString()
+      );
     } catch (error: any) {
       console.log(error.message);
     }
   };
-
 
   return (
     <div>

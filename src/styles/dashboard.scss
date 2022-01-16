@@ -1,6 +1,6 @@
 @import "../../node_modules/bootstrap/scss/bootstrap";
 
-.sidebar-item.dropdown-item.active  {
+.sidebar-item.dropdown-item.active {
   color: $blue !important;
   background-color: $gray-100;
 }
@@ -16,19 +16,34 @@
   background-color: $gray-100;
 }
 
-
 .sidebar-item.dropdown-item:focus:hover,
 .sidebar-button.dropdown-item:focus:hover,
 .sidebar-item.dropdown-item:focus:active,
-.sidebar-button.dropdown-item:focus:active  {
-  
+.sidebar-button.dropdown-item:focus:active {
   background-color: $gray-200 !important;
 }
 
-.custom-toggle:hover{
-  color:black !important
+.custom-toggle {
+  color: gray !important;
 }
 
-.clickable-card:hover{
+.custom-toggle:hover {
+  color: black !important;
+}
+
+.clickable-card:hover {
+  cursor: pointer;
+}
+
+.edit-caret {
+  position: absolute;
+  color: rgba(0, 0, 0, 0.7);
+  border-radius: 3px;
+  background-color: rgba(255,255,255,0.7);
+  top: 5px;
+  right: 5px;
+}
+.edit-caret:hover {
+  color: black !important;
   cursor: pointer;
 }

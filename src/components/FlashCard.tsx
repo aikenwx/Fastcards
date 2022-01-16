@@ -1,5 +1,19 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Alert, Button, Card, Dropdown, Form, Modal } from "react-bootstrap";
+import {
+  Alert,
+  Button,
+  Card,
+  Container,
+  Dropdown,
+  Form,
+  Modal,
+} from "react-bootstrap";
+import {
+  CaretDownFill,
+  CaretDownSquareFill,
+  Pencil,
+  PencilSquare,
+} from "react-bootstrap-icons";
 import { useAuth } from "../contexts/AuthContext";
 import { deleteFlashcard, editFlashcard } from "../databaseHandlers";
 import {
@@ -28,6 +42,8 @@ import {
 } from "../types";
 import FlashcardImage from "./FlashcardImage";
 import ImageDropContainer from "./ImageDropContainer";
+import "../styles/dashboard.scss";
+import ReactCardFlip from "react-card-flip";
 
 export default function FlashCard({
   f,
@@ -54,12 +70,18 @@ export default function FlashCard({
   const [backTextScrollHeight, setBackTextScrollHeight] = useState(38);
   const [showBackCropper, setShowBackCropper] = useState(false);
 
-  const [frontText, setFrontText]: any = useState(f.frontText);
-  const [frontCrop, setFrontCrop]: [Crop, any] = useState({
+  const [frontText, setFrontText] = useState(f.frontText);
+  const [frontCrop, setFrontCrop]: [
+    Crop,
+    React.Dispatch<React.SetStateAction<Crop>>
+  ] = useState({
     x: f.frontImageProps.translateX,
     y: f.frontImageProps.translateY,
   });
-  const [frontImageKey, setFrontImageKey]: [ImageKey, any] = useState({
+  const [frontImageKey, setFrontImageKey]: [
+    ImageKey,
+    React.Dispatch<React.SetStateAction<ImageKey>>
+  ] = useState({
     imageId: f.frontImageId,
     imageUrl: f.frontImageUrl,
   });
@@ -87,7 +109,6 @@ export default function FlashCard({
   const [backImageDimensions, setBackImageDimensions]: [ImageDimensions, any] =
     useState({ ...f.backImageProps });
   const [backImageFile, setBackImageFile]: any = useState();
-
 
   const textAreaRef: any = useRef();
   // reset data once modal flashcard is closed
@@ -198,7 +219,6 @@ export default function FlashCard({
     }
     // original and updated frontImageIds are not the same
     else if (f.frontImageId !== updatedFlashcard.frontImageId) {
-
       uploadFrontImageAndUpdateFlashcard(
         currentUser.uid,
         subjectId,
@@ -304,11 +324,83 @@ export default function FlashCard({
     setBackImageFile();
   };
 
-  return (
-    <div className="m-3">
+  const handleFlip = () => {
+    const flippedCard: Flashcard = { ...f };
+    flippedCard.isFlipped = !flippedCard.isFlipped;
+    editFlashcard(currentUser.uid, subject.subjectId, flippedCard);
+  };
+
+  const modalFace = (
+    isFrontFace: boolean,
+    originalText: string,
+    textScrollHeight: number,
+    showCropper: boolean,
+    crop: Crop,
+    rotation: number,
+    scale: number,
+    imageKey: ImageKey,
+    imageProps: ImageProps,
+    setTextScrollHeight: React.Dispatch<React.SetStateAction<number>>,
+    setShowCropper: React.Dispatch<React.SetStateAction<boolean>>,
+    setText: React.Dispatch<React.SetStateAction<string>>,
+    setCrop: React.Dispatch<React.SetStateAction<Crop>>,
+    setRotation: React.Dispatch<React.SetStateAction<number>>,
+    setScale: React.Dispatch<React.SetStateAction<number>>,
+    handleDeleteImage: () => void,
+    handleImageChange: (file: any) => void
+  ) => (
+    <>
+      <Modal.Body style={{zIndex: `${isFrontFace != f.isFlipped ? 900 : -1}`}}>
+        <Form.Control
+          ref={textAreaRef}
+          as="textarea"
+          className={"mb-2"}
+          defaultValue={originalText}
+          style={{ height: textScrollHeight }}
+          onChange={(e) => {
+            setTextScrollHeight(e.target.scrollHeight + 2);
+            setText(e.target.value);
+          }}
+          placeholder="Enter text"
+        ></Form.Control>
+        {error && <Alert variant="danger">{error}</Alert>}
+        {ImageDropContainer(
+          { ...imageProps },
+          imageKey.imageId,
+          imageKey.imageUrl,
+          crop,
+          scale,
+          rotation,
+          showCropper,
+          setShowCropper,
+          setCrop,
+          setRotation,
+          setScale,
+          handleImageChange,
+          handleDeleteImage
+        )}
+      </Modal.Body>
+    </>
+  );
+
+  const cardFace = (
+    isFrontFace: boolean,
+    originalText: string,
+    originalImageProps: ImageProps,
+    originalImageId: string,
+    originalImageUrl: string
+  ) => (
+    <div className="m-3" style={{zIndex: `${isFrontFace != f.isFlipped ? 900 : -1}`}}>
+      <Card style={{ border: "none" }}>
+        <CaretDownFill
+          className="edit-caret"
+          onClick={handleShow}
+        ></CaretDownFill>
+      </Card>
+
       <div
         className="clickable-card"
-        onClick={handleShow}
+        onClick={handleFlip}
         style={{ width: `${displayImageWidth}rem` }}
       >
         <Card
@@ -323,29 +415,55 @@ export default function FlashCard({
           {f.frontImageUrl &&
             FlashcardImage(
               {
-                ...f.frontImageProps,
+                ...originalImageProps,
               },
-              f.frontImageId,
-              f.frontImageUrl,
+              originalImageId,
+              originalImageUrl,
               displayImageWidth
             )}
-          {(f.flashcardName || f.frontText) && (
-            <Card.Body>
-              <Card.Title>{f.flashcardName}</Card.Title>
 
-              <Card.Text style={{ whiteSpace: "normal" }}>
-                {" "}
-                {f.frontText}
-              </Card.Text>
+          {(f.flashcardName || originalText) && (
+            <Card.Body>
+              {f.flashcardName && <Card.Title>{f.flashcardName}</Card.Title>}
+              {originalText && (
+                <Card.Text style={{ whiteSpace: "normal" }}>
+                  {originalText}
+                </Card.Text>
+              )}
             </Card.Body>
           )}
         </Card>
       </div>
+    </div>
+  );
+
+  return (
+    <>
+      <ReactCardFlip isFlipped={f.isFlipped}>
+        {cardFace(
+          true,
+          f.frontText,
+          {
+            ...f.frontImageProps,
+          },
+          f.frontImageId,
+          f.frontImageUrl
+        )}
+        {cardFace(
+          false,
+          f.backText,
+          {
+            ...f.backImageProps,
+          },
+          f.backImageId,
+          f.backImageUrl
+        )}
+      </ReactCardFlip>
       <Modal show={show} onExited={handleClose} onShow={() => setIsSaved(true)}>
         <Modal.Header>
           <Form.Control
             className="m-2"
-            placeholder="Add a key phrase"
+            placeholder="Untitled"
             defaultValue={f.flashcardName}
             style={{ border: 0, fontSize: 30 }}
             onChange={(e) => setFlashcardName(e.target.value)}
@@ -357,8 +475,10 @@ export default function FlashCard({
             ></Dropdown.Toggle>
 
             <Dropdown.Menu>
+              <Dropdown.Item onClick={handleFlip}>
+                {`Flip to ${f.isFlipped ? "back" : "front"}`}
+              </Dropdown.Item>
               <Dropdown.Item
-                href="#/action-3"
                 onClick={() =>
                   deleteFlashcard(currentUser.uid, subject, f.flashcardId)
                 }
@@ -368,36 +488,46 @@ export default function FlashCard({
             </Dropdown.Menu>
           </Dropdown>
         </Modal.Header>
-        <Modal.Body>
-          <Form.Control
-            ref={textAreaRef}
-            as="textarea"
-            className={"mb-2"}
-            defaultValue={f.frontText}
-            style={{ height: frontTextScrollHeight }}
-            onChange={(e) => {
-              setFrontTextScrollHeight(e.target.scrollHeight + 2);
-              setFrontText(e.target.value);
-            }}
-            placeholder="Add a frontText"
-          ></Form.Control>
-          {error && <Alert variant="danger">{error}</Alert>}
-          {ImageDropContainer(
-            { ...frontImageProps },
-            frontImageKey.imageId,
-            frontImageKey.imageUrl,
-            frontCrop,
-            frontScale,
-            frontRotation,
+        <ReactCardFlip isFlipped={f.isFlipped}>
+          {modalFace(
+            true,
+            f.frontText,
+            frontTextScrollHeight,
             showFrontCropper,
+            frontCrop,
+            frontRotation,
+            frontScale,
+            frontImageKey,
+            frontImageProps,
+            setFrontTextScrollHeight,
             setShowFrontCropper,
+            setFrontText,
             setFrontCrop,
             setFrontRotation,
             setFrontScale,
-            handleFrontImageChange,
-            handleDeleteFrontImage
+            handleDeleteFrontImage,
+            handleFrontImageChange
           )}
-        </Modal.Body>
+          {modalFace(
+            true,
+            f.backText,
+            backTextScrollHeight,
+            showBackCropper,
+            backCrop,
+            backRotation,
+            backScale,
+            backImageKey,
+            backImageProps,
+            setBackTextScrollHeight,
+            setShowBackCropper,
+            setBackText,
+            setBackCrop,
+            setBackRotation,
+            setBackScale,
+            handleDeleteBackImage,
+            handleBackImageChange
+          )}
+        </ReactCardFlip>
         <Modal.Footer>
           <Button variant="secondary" onClick={handleClose}>
             Close
@@ -407,6 +537,6 @@ export default function FlashCard({
           </Button>
         </Modal.Footer>
       </Modal>
-    </div>
+    </>
   );
 }
