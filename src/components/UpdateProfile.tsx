@@ -74,7 +74,7 @@ export default function UpdateProfile() {
                 placeholder="Leave blank to keep the same"
               ></Form.Control>
             </Form.Group>
-            <Button disabled={loading} className="w-100 mt-3" type="submit">
+            <Button disabled={loading} className="w-100 mt-3" type="submit" variant="dark">
               Update Profile
             </Button>
           </Form>

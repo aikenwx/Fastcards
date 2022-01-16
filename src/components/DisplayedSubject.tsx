@@ -41,8 +41,9 @@ export default function DisplayedSubject(subject: Subject, currentUser: any) {
               height: `${displayImageWidth}rem`,
               objectFit: "contain",
             }}
+            variant="dark"
           >
-            <Plus size="30" style={{ margin: "0 0 0 0" }}></Plus>
+            <Plus size={40} style={{ margin: "0 0 0 0" }}></Plus>
           </Button>
         </div>
       </div>

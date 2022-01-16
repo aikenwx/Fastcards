@@ -51,7 +51,7 @@ export default function Login() {
                   required
                 ></Form.Control>
               </Form.Group>
-              <Button disabled={loading} className="w-100 mt-3" type="submit">
+              <Button disabled={loading} className="w-100 mt-3" type="submit" variant="dark">
                 Log In
               </Button>
             </Form>

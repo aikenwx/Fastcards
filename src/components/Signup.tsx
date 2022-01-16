@@ -59,7 +59,7 @@ export default function Signup() {
                 required
               ></Form.Control>
             </Form.Group>
-            <Button disabled={loading} className="w-100 mt-3" type="submit">
+            <Button disabled={loading} className="w-100 mt-3" type="submit" variant="dark">
               Sign Up
             </Button>
           </Form>

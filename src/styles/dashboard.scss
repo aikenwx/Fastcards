@@ -47,3 +47,7 @@
   color: black !important;
   cursor: pointer;
 }
+
+.dropdown-menu.show {
+  z-index: 100 !important;
+}

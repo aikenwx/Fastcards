@@ -20,7 +20,7 @@ import {
 } from "../databaseHandlers";
 import { db } from "../firebase";
 import { cropImageWidth } from "../globalVariables";
-import { getImageProps, parseOrder, stringifyOrder } from "../helperFunctions";
+import { getImageProps, parseOrder, search, stringifyOrder } from "../helperFunctions";
 import "../styles/dashboard.scss";
 import { Flashcard, Subject } from "../types";
 import DisplayedSubject from "./DisplayedSubject";
@@ -32,52 +32,17 @@ export default function Dashboard() {
   const [subjects, setSubjects]: [Subject[], any] = useState([]);
   const [open, setOpen]: any = useState();
   const [currKey, setCurrKey]: any = useState();
-  const [hover, setHover]: any = useState(false);
-  // const formRefs: any = useRef([]);
 
   const [subjectOrder, setSubjectOrder]: [string[], any] = useState([]);
   const [subjectNames, setSubjectNames]: [string[], any] = useState([]);
   const params = useParams();
   const [subjectId, setSubjectId]: any = useState();
 
-  //read
+  const [fetchedSubjects, setFetchedSubjects]:[Subject[], any] = useState([])
 
   useEffect(() => {
     setSubjectId(params.subjectId);
   }, []);
-
-  // useEffect(() => {
-  //   onValue(ref(db, "Users/" + currentUser.uid), (snapshot) => {
-  //     const data = snapshot.val();
-  //     if (data !== null) {
-  //       let arr: any[] = [];
-  //       snapshot.forEach((data) => {
-  //         data.forEach((x) => {
-  //           const flashcards: Flashcard[] = [];
-
-  //           for (const flashcardId in x.val().Flashcards) {
-  //             const flashcard: Flashcard = {
-  //               flashcardId: flashcardId,
-  //               ...x.val().Flashcards[flashcardId],
-  //             };
-
-  //             flashcards.push(flashcard);
-  //           }
-  //           let item = {
-  //             subjectId: x.key,
-  //             flashcards: flashcards,
-  //             name: x.val().name,
-  //           };
-  //           arr.push(item);
-  //         });
-  //       });
-
-  //       setSubjects(arr);
-  //       setSubjectNames(arr.map((x) => x.name));
-  //     } else setSubjects([]);
-  //   });
-  //   setLoading(false);
-  // }, []);
 
   useEffect(() => {
     onValue(ref(db, "Users/" + currentUser.uid), (snapshot) => {
@@ -90,7 +55,6 @@ export default function Dashboard() {
         const subjects = subjectIds.map((subjectId) => {
           const fetchedSubject: uploadedSubject = data.Subjects[subjectId];
 
-
           const flashcardIds = parseOrder(
             data.Subjects[subjectId].flashcardOrderString
           );
@@ -98,7 +62,6 @@ export default function Dashboard() {
           const flashcards = flashcardIds.map((flashcardId) => {
             const fetchedFlashcard: UploadedFlashcard =
               data.Subjects[subjectId].Flashcards[flashcardId];
-
 
             const flashcard: Flashcard = {
               flashcardId: flashcardId,
@@ -114,7 +77,6 @@ export default function Dashboard() {
             return flashcard;
           });
 
-
           const subject: Subject = {
             subjectId: subjectId,
             flashcardOrder: flashcardIds,
@@ -123,12 +85,13 @@ export default function Dashboard() {
           };
           return subject;
         });
-
-
-
+        setFetchedSubjects([...subjects]);
         setSubjects(subjects);
         setSubjectNames(subjects.map((x) => x.subjectName));
-      } else setSubjects([]);
+      } else {
+        setFetchedSubjects([])
+        setSubjects([])
+      };
     });
     setLoading(false);
   }, []);
@@ -212,7 +175,9 @@ export default function Dashboard() {
               <div className="text-muted">SEARCH</div>
 
               <Nav className="flex-column">
-                <Form.Control></Form.Control>
+                <Form.Control onChange={(e) => setSubjects(search(fetchedSubjects,e.target.value))}>
+
+                </Form.Control>
                 <Nav.Link
                   className="sidebar-item d-flex align-items-center"
                   as={Dropdown.Item}
@@ -253,6 +218,7 @@ export default function Dashboard() {
                     </Nav.Link>
                     <div style={{ position: "absolute", right: 0 }}>
                       <Dropdown
+                        align="end"
                         as={ButtonGroup}
                         onToggle={() => {
                           if (open && subject.subjectId == currKey) {
@@ -267,11 +233,8 @@ export default function Dashboard() {
                       >
                         {" "}
                         <Dropdown.Toggle
-                          onMouseEnter={() => setHover(true)}
-                          onMouseLeave={() => setHover(false)}
                           as={ThreeDots}
                           className="m-2 custom-toggle"
- 
                         ></Dropdown.Toggle>
                         <Dropdown.Menu>
                           <Dropdown.Item href="#/action-1">
