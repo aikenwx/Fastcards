@@ -271,9 +271,7 @@ export default function Dashboard() {
                           onMouseLeave={() => setHover(false)}
                           as={ThreeDots}
                           className="m-2 custom-toggle"
-                          style={{
-                            color: !hover ? "gray" : "black",
-                          }}
+ 
                         ></Dropdown.Toggle>
                         <Dropdown.Menu>
                           <Dropdown.Item href="#/action-1">
