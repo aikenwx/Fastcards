@@ -1,19 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
-import {
-  Alert,
-  Button,
-  Card,
-  Container,
-  Dropdown,
-  Form,
-  Modal,
-} from "react-bootstrap";
-import {
-  CaretDownFill,
-  CaretDownSquareFill,
-  Pencil,
-  PencilSquare,
-} from "react-bootstrap-icons";
+import { Alert, Button, Card, Dropdown, Form, Modal } from "react-bootstrap";
+import { CaretDownFill, ThreeDots } from "react-bootstrap-icons";
+import ReactCardFlip from "react-card-flip";
 import { useAuth } from "../contexts/AuthContext";
 import { deleteFlashcard, editFlashcard } from "../databaseHandlers";
 import {
@@ -32,6 +20,7 @@ import {
   uploadBackImageAndUpdateFlashcard,
   uploadFrontImageAndUpdateFlashcard,
 } from "../storageHandlers";
+import "../styles/dashboard.scss";
 import {
   Crop,
   Flashcard,
@@ -42,8 +31,6 @@ import {
 } from "../types";
 import FlashcardImage from "./FlashcardImage";
 import ImageDropContainer from "./ImageDropContainer";
-import "../styles/dashboard.scss";
-import ReactCardFlip from "react-card-flip";
 
 export default function FlashCard({
   f,
@@ -196,10 +183,14 @@ export default function FlashCard({
       frontImageId: frontImageKey.imageId,
       frontImageUrl: frontImageKey.imageUrl,
       frontImageProps: frontImageProps,
+      backText: backText,
       backImageId: backImageKey.imageId,
       backImageUrl: backImageKey.imageUrl,
       backImageProps: backImageProps,
     };
+
+    console.log(f);
+    console.log(updatedFlashcard);
 
     // previous front image id is deleted
     if (f.frontImageId && !updatedFlashcard.frontImageId) {
@@ -350,7 +341,12 @@ export default function FlashCard({
     handleImageChange: (file: any) => void
   ) => (
     <>
-      <Modal.Body style={{zIndex: `${isFrontFace != f.isFlipped ? 900 : -1}`}}>
+      <Modal.Body
+        style={{ zIndex: `${isFrontFace != f.isFlipped ? 900 : -1}` }}
+      >
+        <Modal.Header>
+          <div className="text-muted">{isFrontFace ? "Front" : "Back"}</div>
+        </Modal.Header>
         <Form.Control
           ref={textAreaRef}
           as="textarea"
@@ -390,7 +386,7 @@ export default function FlashCard({
     originalImageId: string,
     originalImageUrl: string
   ) => (
-    <div className="m-3" style={{zIndex: `${isFrontFace != f.isFlipped ? 900 : -1}`}}>
+    <div className="m-3">
       <Card style={{ border: "none" }}>
         <CaretDownFill
           className="edit-caret"
@@ -412,7 +408,7 @@ export default function FlashCard({
             zIndex: -1,
           }}
         >
-          {f.frontImageUrl &&
+          {originalImageUrl &&
             FlashcardImage(
               {
                 ...originalImageProps,
@@ -438,27 +434,28 @@ export default function FlashCard({
   );
 
   return (
-    <>
-      <ReactCardFlip isFlipped={f.isFlipped}>
-        {cardFace(
-          true,
-          f.frontText,
-          {
-            ...f.frontImageProps,
-          },
-          f.frontImageId,
-          f.frontImageUrl
-        )}
-        {cardFace(
-          false,
-          f.backText,
-          {
-            ...f.backImageProps,
-          },
-          f.backImageId,
-          f.backImageUrl
-        )}
+    <div>
+      <ReactCardFlip isFlipped={f.isFlipped} >
+          {cardFace(
+            true,
+            f.frontText,
+            {
+              ...f.frontImageProps,
+            },
+            f.frontImageId,
+            f.frontImageUrl
+          )}
+          {cardFace(
+            false,
+            f.backText,
+            {
+              ...f.backImageProps,
+            },
+            f.backImageId,
+            f.backImageUrl
+          )}
       </ReactCardFlip>
+
       <Modal show={show} onExited={handleClose} onShow={() => setIsSaved(true)}>
         <Modal.Header>
           <Form.Control
@@ -470,8 +467,8 @@ export default function FlashCard({
           />
           <Dropdown align={"end"}>
             <Dropdown.Toggle
-              id="dropdown-basic"
-              variant="light"
+              as={ThreeDots}
+              className="m-2 custom-toggle"
             ></Dropdown.Toggle>
 
             <Dropdown.Menu>
@@ -509,7 +506,7 @@ export default function FlashCard({
             handleFrontImageChange
           )}
           {modalFace(
-            true,
+            false,
             f.backText,
             backTextScrollHeight,
             showBackCropper,
@@ -537,6 +534,6 @@ export default function FlashCard({
           </Button>
         </Modal.Footer>
       </Modal>
-    </>
+    </div>
   );
 }

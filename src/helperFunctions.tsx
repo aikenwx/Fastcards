@@ -1,5 +1,5 @@
 import { blankImageProps, imageSizeLimit } from "./globalVariables";
-import { ImageProps } from "./types";
+import { ImageProps, Subject } from "./types";
 
 export const checkFileIsImage = (file: File) => {
   return file && file["type"].split("/")[0] === "image";
@@ -39,4 +39,27 @@ export const parseOrder: (orderString: string) => string[] = (
 
 export const stringifyOrder = (orderArray: string[]) => {
   return JSON.stringify(orderArray);
+};
+
+export const search = (subjects: Subject[], searchString: string) => {
+  const result = subjects.map((subject) => {
+
+    
+
+    const resSubject = { ...subject };
+    if (resSubject.subjectName.toLowerCase() == searchString.toLocaleLowerCase()) {
+      return resSubject
+    }
+    const flashcards = subject.flashcards.filter((flashcard) => {
+      const str = searchString.toLowerCase();
+      return (
+        flashcard.frontText.toLowerCase().includes(str) ||
+        flashcard.backText.toLowerCase().includes(str) ||
+        flashcard.flashcardName.toLowerCase().includes(str)
+      );
+    });
+    resSubject.flashcards = flashcards;
+    return resSubject;
+  });
+  return result;
 };
