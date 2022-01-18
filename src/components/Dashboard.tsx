@@ -6,7 +6,8 @@ import {
   Dropdown,
   Form,
   Nav,
-  Spinner,
+  Navbar,
+  Spinner
 } from "react-bootstrap";
 import { Files, House, Plus, ThreeDots } from "react-bootstrap-icons";
 import { useParams } from "react-router-dom";
@@ -16,11 +17,11 @@ import {
   deleteSubject,
   renameSubject,
   UploadedFlashcard,
-  uploadedSubject,
+  uploadedSubject
 } from "../databaseHandlers";
 import { db } from "../firebase";
 import { cropImageWidth } from "../globalVariables";
-import { getImageProps, parseOrder, search, stringifyOrder } from "../helperFunctions";
+import { getImageProps, parseOrder, search } from "../helperFunctions";
 import "../styles/dashboard.scss";
 import { Flashcard, Subject } from "../types";
 import DisplayedSubject from "./DisplayedSubject";
@@ -38,7 +39,7 @@ export default function Dashboard() {
   const params = useParams();
   const [subjectId, setSubjectId]: any = useState();
 
-  const [fetchedSubjects, setFetchedSubjects]:[Subject[], any] = useState([])
+  const [fetchedSubjects, setFetchedSubjects]: [Subject[], any] = useState([]);
 
   useEffect(() => {
     setSubjectId(params.subjectId);
@@ -89,9 +90,9 @@ export default function Dashboard() {
         setSubjects(subjects);
         setSubjectNames(subjects.map((x) => x.subjectName));
       } else {
-        setFetchedSubjects([])
-        setSubjects([])
-      };
+        setFetchedSubjects([]);
+        setSubjects([]);
+      }
     });
     setLoading(false);
   }, []);
@@ -167,139 +168,149 @@ export default function Dashboard() {
       <NavBar></NavBar>
       <Container fluid className="d-flex flex-grow-1">
         <div className="row">
-          <nav
-            id="sidebarMenu"
-            className="col-md-auto col-lg-auto d-md-block mw-10 bg-light sidebar collapse show"
-          >
-            <div className="position-sticky pt-3">
-              <div className="text-muted">SEARCH</div>
+          <Navbar collapseOnSelect expand={"lg"} className="d-block" variant="light">
+            <div
+              className="sidebar-menu"
+              style={{ position: "-webkit-sticky", top: "3rem" }}
+            >
+              <Navbar.Toggle aria-controls="responsive-navbar-nav" />
+              <Navbar.Collapse className=" pt-3" id="responsive-navbar-nav">
+                <div>
+                  <div className="text-muted">SEARCH</div>
 
-              <Nav className="flex-column">
-                <Form.Control onChange={(e) => setSubjects(search(fetchedSubjects,e.target.value))}>
-
-                </Form.Control>
-                <Nav.Link
-                  className="sidebar-item d-flex align-items-center"
-                  as={Dropdown.Item}
-                  style={{ color: "black", width: "18rem" }}
-                  href="/"
-                >
-                  <House className="m-1"></House>
-                  Dashboard
-                </Nav.Link>
-              </Nav>
-              <div className="text-muted">SAVED DECKS</div>
-
-              <Nav className="flex-column">
-                {subjects.map((subject, num) => (
-                  <div
-                    className="d-flex align-items-center"
-                    key={subject.subjectId}
-                  >
+                  <Nav className="flex-column">
+                    <Form.Control
+                      onChange={(e) =>
+                        setSubjects(search(fetchedSubjects, e.target.value))
+                      }
+                    ></Form.Control>
                     <Nav.Link
                       className="sidebar-item d-flex align-items-center"
                       as={Dropdown.Item}
-                      variant="light"
-                      href={subject.subjectId}
-                      style={{
-                        color: "black",
-                      }}
+                      style={{ color: "black", width: "18rem" }}
+                      href="/"
                     >
-                      <Files className="m-1"></Files>
-                      <div
-                        style={{
-                          maxWidth: "13rem",
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                        }}
-                      >
-                        {subject.subjectName}
-                      </div>
+                      <House className="m-1"></House>
+                      Dashboard
                     </Nav.Link>
-                    <div style={{ position: "absolute", right: 0 }}>
-                      <Dropdown
-                        align="end"
-                        as={ButtonGroup}
-                        onToggle={() => {
-                          if (open && subject.subjectId == currKey) {
-                            setOpen(false);
-                            setCurrKey("");
-                          } else {
-                            setOpen(true);
-                            setCurrKey(subject.subjectId);
-                          }
-                        }}
-                        show={open && currKey == subject.subjectId}
+                  </Nav>
+                  <div className="text-muted">SAVED DECKS</div>
+
+                  <Nav className="flex-column">
+                    {subjects.map((subject, num) => (
+                      <div
+                        className="d-flex align-items-center"
+                        key={subject.subjectId}
                       >
-                        {" "}
-                        <Dropdown.Toggle
-                          as={ThreeDots}
-                          className="m-2 custom-toggle"
-                        ></Dropdown.Toggle>
-                        <Dropdown.Menu>
-                          <Dropdown.Item href="#/action-1">
-                            <Form
-                              onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                              }}
-                            >
-                              <Form.Label>Rename Subject</Form.Label>
-                              <Form.Control
-                                defaultValue={subject.subjectName}
-                                onClick={(e) => {
-                                  e.preventDefault();
-                                  e.stopPropagation();
-                                }}
-                                onBlur={(e) =>
-                                  renameSubject(
+                        <Nav.Link
+                          className="sidebar-item d-flex align-items-center"
+                          as={Dropdown.Item}
+                          variant="light"
+                          href={subject.subjectId}
+                          style={{
+                            color: "black",
+                          }}
+                        >
+                          <Files className="m-1"></Files>
+                          <div
+                            style={{
+                              maxWidth: "13rem",
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                            }}
+                          >
+                            {subject.subjectName}
+                          </div>
+                        </Nav.Link>
+                        <div style={{ position: "absolute", right: 0 }}>
+                          <Dropdown
+                            align="end"
+                            as={ButtonGroup}
+                            onToggle={() => {
+                              if (open && subject.subjectId == currKey) {
+                                setOpen(false);
+                                setCurrKey("");
+                              } else {
+                                setOpen(true);
+                                setCurrKey(subject.subjectId);
+                              }
+                            }}
+                            show={open && currKey == subject.subjectId}
+                          >
+                            {" "}
+                            <Dropdown.Toggle
+                              as={ThreeDots}
+                              className="m-2 custom-toggle"
+                            ></Dropdown.Toggle>
+                            <Dropdown.Menu>
+                              <Dropdown.Item href="#/action-1">
+                                <Form
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                  }}
+                                >
+                                  <Form.Label>Rename Subject</Form.Label>
+                                  <Form.Control
+                                    defaultValue={subject.subjectName}
+                                    onClick={(e) => {
+                                      e.preventDefault();
+                                      e.stopPropagation();
+                                    }}
+                                    onBlur={(e) =>
+                                      renameSubject(
+                                        currentUser.uid,
+                                        subject.subjectId,
+                                        e.target.value
+                                      )
+                                    }
+                                    onKeyDown={(e) => {
+                                      if (e.key == "Enter") {
+                                        e.stopPropagation();
+                                        e.preventDefault();
+                                        setOpen(!open);
+                                        setCurrKey(subject.subjectId);
+                                      }
+                                    }}
+                                  />
+                                </Form>
+                              </Dropdown.Item>
+                              <Dropdown.Item
+                                href="#/action-2"
+                                onClick={() =>
+                                  deleteSubject(
                                     currentUser.uid,
-                                    subject.subjectId,
-                                    e.target.value
+                                    subject,
+                                    subjectOrder
                                   )
                                 }
-                                onKeyDown={(e) => {
-                                  if (e.key == "Enter") {
-                                    e.stopPropagation();
-                                    e.preventDefault();
-                                    setOpen(!open);
-                                    setCurrKey(subject.subjectId);
-                                  }
-                                }}
-                              />
-                            </Form>
-                          </Dropdown.Item>
-                          <Dropdown.Item
-                            href="#/action-2"
-                            onClick={() =>
-                              deleteSubject(
-                                currentUser.uid,
-                                subject,
-                                subjectOrder
-                              )
-                            }
-                          >
-                            Delete Subject
-                          </Dropdown.Item>
-                        </Dropdown.Menu>
-                      </Dropdown>
-                    </div>
-                  </div>
-                ))}
-                <Nav.Link
-                  onClick={handleSubmit}
-                  className="d-flex align-items-center sidebar-button"
-                  as={Dropdown.Item}
-                  style={{ color: "black" }}
-                >
-                  <Plus className="m-1"></Plus>
-                  Add Deck
-                </Nav.Link>
-              </Nav>
+                              >
+                                Delete Subject
+                              </Dropdown.Item>
+                            </Dropdown.Menu>
+                          </Dropdown>
+                        </div>
+                      </div>
+                    ))}
+                    <Nav.Link
+                      onClick={handleSubmit}
+                      className="d-flex align-items-center sidebar-button"
+                      as={Dropdown.Item}
+                      style={{ color: "black" }}
+                    >
+                      <Plus className="m-1"></Plus>
+                      Add Deck
+                    </Nav.Link>
+                  </Nav>
+                </div>
+              </Navbar.Collapse>
             </div>
-          </nav>
+          </Navbar>
         </div>
-        <Container fluid>{displayedSubjects(subjectId)}</Container>
+        <Container fluid>
+          <div style={{height:"3rem"}}/>
+          {displayedSubjects(subjectId)}
+        </Container>
       </Container>
     </div>
   );

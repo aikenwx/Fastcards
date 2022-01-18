@@ -15,16 +15,16 @@ export default function NavBar() {
 
   return (
     <Navbar
-      className="flex-md-nowrap p-0 sticky-top"
+      className="flex-md-nowrap p-0"
+      fixed="top"
       collapseOnSelect
-      expand="lg"
+   
       bg="dark"
       variant="dark"
     >
       <Navbar.Brand className="col-md-3 col-lg-4 me-0 px-4" href="/">
         FastCards
       </Navbar.Brand>
-      <Navbar.Toggle aria-controls="responsive-navbar-nav" />
       <Navbar.Collapse id="responsive-navbar-nav">
         <Nav className="me-auto"></Nav>
         <Nav>
