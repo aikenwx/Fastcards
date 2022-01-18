@@ -25,6 +25,7 @@ export default function Signup() {
       setLoading(true);
       await signUp(emailRef.current.value, passwordRef.current.value);
       navigate("/");
+      return;
     } catch (exception: any) {
       setError(exception.message);
     }

@@ -1,4 +1,4 @@
-import React, { useRef, useState, useCallback } from "react";
+import React, { useRef } from "react";
 import {
   Button,
   Container,
@@ -6,12 +6,12 @@ import {
   OverlayTrigger,
   Tooltip,
 } from "react-bootstrap";
-import "../styles/imageDropBox.scss";
 import { Upload } from "react-bootstrap-icons";
 import Cropper from "react-easy-crop";
-import FlashcardImage from "./FlashcardImage";
-import { ImageConfig, Crop, ImageProps } from "../types";
 import { cropImageWidth } from "../globalVariables";
+import "../styles/imageDropBox.scss";
+import { Crop, ImageProps } from "../types";
+import FlashcardImage from "./FlashcardImage";
 
 export default function ImageDropContainer(
   imageProps: ImageProps,
@@ -33,7 +33,6 @@ export default function ImageDropContainer(
     imageId: imageId,
     imageUrl: imageUrl,
   };
-
 
   const hiddenFileInput: any = useRef(null);
   const secondHiddenFileInput: any = useRef(null);

@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Container, Nav, Navbar } from "react-bootstrap";
+import React from "react";
+import { Nav, Navbar } from "react-bootstrap";
 import { useAuth } from "../contexts/AuthContext";
 
 export default function NavBar() {
@@ -18,7 +18,6 @@ export default function NavBar() {
       className="flex-md-nowrap p-0"
       fixed="top"
       collapseOnSelect
-   
       bg="dark"
       variant="dark"
     >

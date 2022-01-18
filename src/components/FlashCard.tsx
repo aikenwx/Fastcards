@@ -7,18 +7,18 @@ import { deleteFlashcard, editFlashcard } from "../databaseHandlers";
 import {
   blankImageProps,
   displayImageWidth,
-  imageSizeLimit,
+  imageSizeLimit
 } from "../globalVariables";
 import {
   checkFileIsImage,
   checkValidFileSize,
-  getHeightAndWidthFromDataUrl,
+  getHeightAndWidthFromDataUrl
 } from "../helperFunctions";
 import {
   deleteBackImage,
   deleteFrontImage,
   uploadBackImageAndUpdateFlashcard,
-  uploadFrontImageAndUpdateFlashcard,
+  uploadFrontImageAndUpdateFlashcard
 } from "../storageHandlers";
 import "../styles/dashboard.scss";
 import {
@@ -27,7 +27,7 @@ import {
   ImageDimensions,
   ImageKey,
   ImageProps,
-  Subject,
+  Subject
 } from "../types";
 import FlashcardImage from "./FlashcardImage";
 import ImageDropContainer from "./ImageDropContainer";
@@ -188,9 +188,6 @@ export default function FlashCard({
       backImageUrl: backImageKey.imageUrl,
       backImageProps: backImageProps,
     };
-
-    console.log(f);
-    console.log(updatedFlashcard);
 
     // previous front image id is deleted
     if (f.frontImageId && !updatedFlashcard.frontImageId) {
@@ -435,25 +432,25 @@ export default function FlashCard({
 
   return (
     <div>
-      <ReactCardFlip isFlipped={f.isFlipped} >
-          {cardFace(
-            true,
-            f.frontText,
-            {
-              ...f.frontImageProps,
-            },
-            f.frontImageId,
-            f.frontImageUrl
-          )}
-          {cardFace(
-            false,
-            f.backText,
-            {
-              ...f.backImageProps,
-            },
-            f.backImageId,
-            f.backImageUrl
-          )}
+      <ReactCardFlip isFlipped={f.isFlipped}>
+        {cardFace(
+          true,
+          f.frontText,
+          {
+            ...f.frontImageProps,
+          },
+          f.frontImageId,
+          f.frontImageUrl
+        )}
+        {cardFace(
+          false,
+          f.backText,
+          {
+            ...f.backImageProps,
+          },
+          f.backImageId,
+          f.backImageUrl
+        )}
       </ReactCardFlip>
 
       <Modal show={show} onExited={handleClose} onShow={() => setIsSaved(true)}>
@@ -473,7 +470,7 @@ export default function FlashCard({
 
             <Dropdown.Menu>
               <Dropdown.Item onClick={handleFlip}>
-                {`Flip to ${f.isFlipped ? "back" : "front"}`}
+                {`Flip to ${f.isFlipped ? "front" : "back"}`}
               </Dropdown.Item>
               <Dropdown.Item
                 onClick={() =>

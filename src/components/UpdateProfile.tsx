@@ -1,7 +1,7 @@
 import React, { useRef, useState } from "react";
-import { Alert, Form, Button, Card } from "react-bootstrap";
-import { useAuth } from "../contexts/AuthContext";
+import { Alert, Button, Card, Form } from "react-bootstrap";
 import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
 import BoxContainer from "./BoxContainer";
 
 export default function UpdateProfile() {
@@ -74,7 +74,12 @@ export default function UpdateProfile() {
                 placeholder="Leave blank to keep the same"
               ></Form.Control>
             </Form.Group>
-            <Button disabled={loading} className="w-100 mt-3" type="submit" variant="dark">
+            <Button
+              disabled={loading}
+              className="w-100 mt-3"
+              type="submit"
+              variant="dark"
+            >
               Update Profile
             </Button>
           </Form>
