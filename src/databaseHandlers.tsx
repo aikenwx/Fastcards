@@ -87,12 +87,14 @@ export const deleteSubject = (
     (x) => x != subject.subjectId
   );
 
-  const imageIds: string[] = [];
+  let imageIds: string[] = [];
 
   subject.flashcards.map((f) => {
     imageIds.push(f.frontImageId);
     imageIds.push(f.backImageId);
   });
+
+  imageIds = imageIds.filter((imageId) => imageId);
 
   update(ref(db, "Users/" + uid), {
     subjectOrderString: stringifyOrder(updatedSubjectOrder),
@@ -146,8 +148,8 @@ export const deleteFlashcard = (
   updatedOrder = updatedOrder.filter((x) => x != flashcardId);
 
   update(ref(db, "Users/" + uid + "/Subjects/" + subject.subjectId), {
-      flashcardOrderString: stringifyOrder(updatedOrder),
-    })
+    flashcardOrderString: stringifyOrder(updatedOrder),
+  });
   remove(
     ref(
       db,
@@ -158,7 +160,7 @@ export const deleteFlashcard = (
         "/Flashcards/" +
         flashcardId
     )
-  )
+  );
 };
 
 export const editFlashcard = (

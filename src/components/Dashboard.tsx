@@ -168,7 +168,12 @@ export default function Dashboard() {
       <NavBar></NavBar>
       <Container fluid className="d-flex flex-grow-1">
         <div className="row">
-          <Navbar collapseOnSelect expand={"lg"} className="d-block" variant="light">
+          <Navbar
+            collapseOnSelect
+            expand={"lg"}
+            className="d-block"
+            variant="light"
+          >
             <div
               className="sidebar-menu"
               style={{ position: "-webkit-sticky", top: "3rem" }}
@@ -308,7 +313,7 @@ export default function Dashboard() {
           </Navbar>
         </div>
         <Container fluid>
-          <div style={{height:"3rem"}}/>
+          <div style={{ height: "3rem" }} />
           {displayedSubjects(subjectId)}
         </Container>
       </Container>

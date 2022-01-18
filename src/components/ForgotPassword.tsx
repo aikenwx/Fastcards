@@ -1,7 +1,7 @@
 import React, { useRef, useState } from "react";
-import { Alert, Form, Button, Card } from "react-bootstrap";
-import { useAuth } from "../contexts/AuthContext";
+import { Alert, Button, Card, Form } from "react-bootstrap";
 import { Link } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
 import BoxContainer from "./BoxContainer";
 
 export default function ForgotPassword() {

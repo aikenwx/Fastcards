@@ -1,4 +1,4 @@
-import { blankImageProps, imageSizeLimit } from "./globalVariables";
+import { imageSizeLimit } from "./globalVariables";
 import { ImageProps, Subject } from "./types";
 
 export const checkFileIsImage = (file: File) => {
@@ -43,12 +43,11 @@ export const stringifyOrder = (orderArray: string[]) => {
 
 export const search = (subjects: Subject[], searchString: string) => {
   const result = subjects.map((subject) => {
-
-    
-
     const resSubject = { ...subject };
-    if (resSubject.subjectName.toLowerCase() == searchString.toLocaleLowerCase()) {
-      return resSubject
+    if (
+      resSubject.subjectName.toLowerCase() == searchString.toLocaleLowerCase()
+    ) {
+      return resSubject;
     }
     const flashcards = subject.flashcards.filter((flashcard) => {
       const str = searchString.toLowerCase();
