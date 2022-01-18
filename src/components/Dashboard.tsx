@@ -168,12 +168,7 @@ export default function Dashboard() {
       <NavBar></NavBar>
       <Container fluid className="d-flex flex-grow-1">
         <div className="row">
-          <Navbar
-            collapseOnSelect
-            expand={"lg"}
-            className="d-block"
-            variant="light"
-          >
+          <Navbar collapseOnSelect expand={"lg"} className="d-block bg-light">
             <div
               className="sidebar-menu"
               style={{ position: "-webkit-sticky", top: "3rem" }}
