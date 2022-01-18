@@ -403,7 +403,7 @@ export default function FlashCard({
         <Card
           className={
             "card " +
-            (isFrontFace ? "text-dark bg-light" : "text-white bg-dark")
+            (isFrontFace ? "" : "text-white bg-dark")
           }
           style={{
             width: `${displayImageWidth}rem`,
