@@ -57,3 +57,10 @@
   position: -webkit-sticky !important;
   top: 50 !important;
 }
+
+.modal:nth-of-type(even) {
+  z-index: 1056 !important;
+}
+.modal-backdrop.show:nth-of-type(even) {
+  z-index: 1055 !important;
+}

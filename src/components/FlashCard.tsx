@@ -46,6 +46,7 @@ export default function FlashCard({
 
   const { currentUser } = useAuth();
   const [show, setShow] = useState(false);
+  const [showWarning, setShowWarning] = useState(false);
   const [error, setError] = useState("");
   const [isSaved, setIsSaved] = useState(true);
 
@@ -161,6 +162,7 @@ export default function FlashCard({
 
   const handleClose = () => {
     setShow(false);
+    setShowWarning(false);
     setError("");
     setFlashcardName(f.flashcardName);
     setFrontText(f.frontText);
@@ -315,6 +317,8 @@ export default function FlashCard({
   const handleFlip = () => {
     const flippedCard: Flashcard = { ...f };
     flippedCard.isFlipped = !flippedCard.isFlipped;
+    setShowBackCropper(false);
+    setShowFrontCropper(false);
     editFlashcard(currentUser.uid, subject.subjectId, flippedCard);
   };
 
@@ -383,7 +387,7 @@ export default function FlashCard({
     originalImageId: string,
     originalImageUrl: string
   ) => (
-    <div className="m-3">
+    <div className={"m-3"}>
       <Card style={{ border: "none" }}>
         <CaretDownFill
           className="edit-caret"
@@ -397,7 +401,10 @@ export default function FlashCard({
         style={{ width: `${displayImageWidth}rem` }}
       >
         <Card
-          className="card"
+          className={
+            "card " +
+            (isFrontFace ? "text-dark bg-light" : "text-white bg-dark")
+          }
           style={{
             width: `${displayImageWidth}rem`,
             overflow: "hidden",
@@ -523,11 +530,43 @@ export default function FlashCard({
           )}
         </ReactCardFlip>
         <Modal.Footer>
-          <Button variant="secondary" onClick={handleClose}>
+          <Button
+            variant="secondary"
+            onClick={() => {
+              if (!isSaved) {
+                setShowWarning(true);
+                return;
+              }
+              handleClose();
+            }}
+          >
             Close
           </Button>
-          <Button variant="primary" disabled={isSaved} onClick={handleSave}>
+          <Button
+            className={isSaved ? "text-muted" : ""}
+            variant="dark"
+            disabled={isSaved}
+            onClick={handleSave}
+          >
             Save Changes
+          </Button>
+        </Modal.Footer>
+      </Modal>
+      <Modal show={showWarning} centered>
+        <Modal.Header>Save changes before closing?</Modal.Header>
+
+        <Modal.Footer>
+          <Button variant="secondary" onClick={handleClose}>
+            No
+          </Button>
+          <Button
+            variant="dark"
+            onClick={() => {
+              handleSave();
+              handleClose();
+            }}
+          >
+            Yes
           </Button>
         </Modal.Footer>
       </Modal>
