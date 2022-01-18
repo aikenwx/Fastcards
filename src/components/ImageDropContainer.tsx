@@ -1,10 +1,11 @@
 import React, { useRef } from "react";
 import {
   Button,
+  ButtonGroup,
   Container,
   Form,
   OverlayTrigger,
-  Tooltip,
+  Tooltip
 } from "react-bootstrap";
 import { Upload } from "react-bootstrap-icons";
 import Cropper from "react-easy-crop";
@@ -47,6 +48,7 @@ export default function ImageDropContainer(
       aspect={1}
       onCropChange={setCrop}
       onZoomChange={setScale}
+      onRotationChange={setRotation}
     />
   );
 
@@ -60,6 +62,7 @@ export default function ImageDropContainer(
       aspect={1}
       onCropChange={setCrop}
       onZoomChange={setScale}
+      onRotationChange={setRotation}
     />
   );
 
@@ -123,20 +126,21 @@ export default function ImageDropContainer(
 
             <Container>
               <div className="d-flex justify-content-center align-items-center">
-                <Button
-                  className="m-2"
-                  variant="secondary"
-                  onClick={() => setShowCropper(false)}
-                >
-                  Done
-                </Button>
-                <Button className="m-2" onClick={handleDeleteImage}>
-                  Delete Image
-                </Button>
+                <ButtonGroup className="m-2">
+                  <Button
+                    variant="secondary"
+                    onClick={() => setShowCropper(false)}
+                  >
+                    Done
+                  </Button>
+                  <Button onClick={handleDeleteImage} variant="dark">
+                    Delete Image
+                  </Button>
 
-                <Button className="m-2" onClick={handleChooseNewImageClick}>
-                  Choose New Image
-                </Button>
+                  <Button onClick={handleChooseNewImageClick} variant="dark">
+                    Choose New Image
+                  </Button>
+                </ButtonGroup>
               </div>
               <Form.Label>Rotation</Form.Label>
               <Form.Range
@@ -149,6 +153,7 @@ export default function ImageDropContainer(
               ></Form.Range>
               <Form.Label>Zoom</Form.Label>
               <Form.Range
+                style={{color:"black"}}
                 min={100}
                 max={300}
                 value={imageConfig.scale * 100}
